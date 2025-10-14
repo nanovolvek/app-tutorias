@@ -16,3 +16,5 @@ class Tutor(Base):
     
     # Relación con la tabla schools
     school = relationship("School", back_populates="tutors")
+    # Relación con la tabla tutor_attendance
+    tutor_attendance = relationship("TutorAttendance", back_populates="tutor")
