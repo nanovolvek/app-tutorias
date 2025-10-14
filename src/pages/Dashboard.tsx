@@ -1,39 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import AttendanceChart from '../components/AttendanceChart';
 
-interface School {
-  id: number;
-  name: string;
-  comuna: string;
-}
-
-interface Student {
-  id: number;
-  first_name: string;
-  last_name: string;
+interface StudentAttendanceSummary {
+  student_id: number;
+  student_name: string;
   course: string;
-  school_id: number;
-  school?: School;
-  created_at: string;
-  updated_at?: string;
+  school_name: string;
+  total_weeks: number;
+  attended_weeks: number;
+  attendance_percentage: number;
+  weekly_attendance: { [key: string]: boolean };
 }
 
 const Dashboard: React.FC = () => {
-  const [students, setStudents] = useState<Student[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [attendanceData, setAttendanceData] = useState<StudentAttendanceSummary[]>([]);
+  const [attendanceLoading, setAttendanceLoading] = useState(true);
+  const [attendanceError, setAttendanceError] = useState('');
   const { token } = useAuth();
 
-  // Mapeo de colegios (temporal hasta que el endpoint funcione correctamente)
-  const schoolsMap: { [key: number]: { name: string; comuna: string } } = {
-    1: { name: 'Colegio San Patricio', comuna: 'Las Condes' },
-    2: { name: 'Liceo Manuel Barros Borgoño', comuna: 'Santiago' }
-  };
-
   useEffect(() => {
-    const fetchStudents = async () => {
+    const fetchAttendanceData = async () => {
       try {
-        const response = await fetch('http://localhost:8000/students/', {
+        const response = await fetch('http://localhost:8000/attendance/summary', {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -42,20 +31,20 @@ const Dashboard: React.FC = () => {
 
         if (response.ok) {
           const data = await response.json();
-          console.log('Estudiantes recibidos:', data);
-          setStudents(data);
+          console.log('Datos de asistencia recibidos:', data);
+          setAttendanceData(data);
         } else {
-          setError('Error al cargar los estudiantes');
+          setAttendanceError('Error al cargar los datos de asistencia');
         }
       } catch (err) {
-        setError('Error de conexión');
+        setAttendanceError('Error de conexión al cargar asistencia');
       } finally {
-        setLoading(false);
+        setAttendanceLoading(false);
       }
     };
 
     if (token) {
-      fetchStudents();
+      fetchAttendanceData();
     }
   }, [token]);
 
@@ -67,59 +56,33 @@ const Dashboard: React.FC = () => {
         del programa, estadísticas de asistencia, y acceso rápido a las funciones principales.
       </p>
 
-      <div className="students-section">
-        <h2 className="section-title">Lista de Estudiantes</h2>
+      {/* Sección de Gráfico de Asistencia */}
+      <div className="attendance-section">
+        <h2 className="section-title">Estadísticas de Asistencia</h2>
         
-        {loading && (
+        {attendanceLoading && (
           <div className="loading">
-            <p>Cargando estudiantes...</p>
+            <p>Cargando datos de asistencia...</p>
           </div>
         )}
 
-        {error && (
+        {attendanceError && (
           <div className="error-message">
-            <p>{error}</p>
+            <p>{attendanceError}</p>
           </div>
         )}
 
-        {!loading && !error && students.length === 0 && (
+        {!attendanceLoading && !attendanceError && attendanceData.length > 0 && (
+          <AttendanceChart data={attendanceData} />
+        )}
+
+        {!attendanceLoading && !attendanceError && attendanceData.length === 0 && (
           <div className="no-data">
-            <p>No hay estudiantes registrados</p>
-          </div>
-        )}
-
-        {!loading && !error && students.length > 0 && (
-          <div className="students-table-container">
-            <table className="students-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Nombre Completo</th>
-                  <th>Curso</th>
-                  <th>Colegio</th>
-                  <th>Comuna</th>
-                  <th>Fecha de Registro</th>
-                </tr>
-              </thead>
-              <tbody>
-                {students.map((student) => {
-                  const schoolInfo = schoolsMap[student.school_id];
-                  return (
-                    <tr key={student.id}>
-                      <td>{student.id}</td>
-                      <td>{student.first_name} {student.last_name}</td>
-                      <td>{student.course}</td>
-                      <td>{schoolInfo?.name || 'N/A'}</td>
-                      <td>{schoolInfo?.comuna || 'N/A'}</td>
-                      <td>{new Date(student.created_at).toLocaleDateString('es-ES')}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+            <p>No hay datos de asistencia disponibles</p>
           </div>
         )}
       </div>
+
     </div>
   );
 };
