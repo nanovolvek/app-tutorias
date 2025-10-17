@@ -12,7 +12,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const { user, logout } = useAuth();
-  const { equipoInfo, loading: equipoLoading } = useEquipo();
+  const { equipoInfo } = useEquipo();
 
   const getMenuItems = () => {
     const baseItems = [
