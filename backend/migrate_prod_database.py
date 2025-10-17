@@ -13,12 +13,12 @@ load_dotenv()
 
 def migrate_database():
     """Aplicar migraciones a la base de datos de producción"""
-    print("🔄 Aplicando migraciones a la base de datos de producción...")
+    print("Aplicando migraciones a la base de datos de produccion...")
     
     # Obtener conexión a producción
     prod_db_url = os.getenv('DATABASE_URL')
     if not prod_db_url:
-        print("❌ Error: DATABASE_URL no está configurada")
+        print("Error: DATABASE_URL no esta configurada")
         return False
     
     engine = create_engine(prod_db_url)
@@ -34,7 +34,7 @@ def migrate_database():
             """)).scalar()
             
             if not result:
-                print("📋 Creando tablas de asistencia...")
+                print("Creando tablas de asistencia...")
                 
                 # Crear tabla asistencia_estudiantes
                 conn.execute(text("""
@@ -73,9 +73,9 @@ def migrate_database():
                     ON asistencia_tutores(tutor_id);
                 """))
                 
-                print("✅ Tablas de asistencia creadas")
+                print("Tablas de asistencia creadas")
             else:
-                print("✅ Tablas de asistencia ya existen")
+                print("Tablas de asistencia ya existen")
             
             # Verificar si necesitamos agregar campos a tutores
             result = conn.execute(text("""
@@ -85,7 +85,7 @@ def migrate_database():
             """)).fetchone()
             
             if not result:
-                print("📋 Agregando campos adicionales a tutores...")
+                print("Agregando campos adicionales a tutores...")
                 
                 # Agregar campos opcionales a tutores
                 conn.execute(text("""
@@ -96,9 +96,9 @@ def migrate_database():
                     ADD COLUMN observaciones TEXT;
                 """))
                 
-                print("✅ Campos adicionales agregados a tutores")
+                print("Campos adicionales agregados a tutores")
             else:
-                print("✅ Campos adicionales ya existen en tutores")
+                print("Campos adicionales ya existen en tutores")
             
             # Verificar si necesitamos agregar campo deleted a estudiantes
             result = conn.execute(text("""
@@ -108,7 +108,7 @@ def migrate_database():
             """)).fetchone()
             
             if not result:
-                print("📋 Agregando campo deleted a estudiantes...")
+                print("Agregando campo deleted a estudiantes...")
                 
                 # Agregar campo deleted a estudiantes
                 conn.execute(text("""
@@ -116,26 +116,26 @@ def migrate_database():
                     ADD COLUMN deleted BOOLEAN DEFAULT FALSE NOT NULL;
                 """))
                 
-                print("✅ Campo deleted agregado a estudiantes")
+                print("Campo deleted agregado a estudiantes")
             else:
-                print("✅ Campo deleted ya existe en estudiantes")
+                print("Campo deleted ya existe en estudiantes")
             
             conn.commit()
-            print("🎉 Migraciones aplicadas exitosamente!")
+            print("Migraciones aplicadas exitosamente!")
             return True
             
     except Exception as e:
-        print(f"❌ Error durante la migración: {e}")
+        print(f"Error durante la migracion: {e}")
         return False
 
 def main():
     """Función principal"""
-    print("🚀 Iniciando migración de base de datos de producción")
+    print("Iniciando migracion de base de datos de produccion")
     
     # Verificar que estamos en producción
     if not os.getenv('DATABASE_URL') or 'localhost' in os.getenv('DATABASE_URL', ''):
-        print("❌ Error: No se detectó configuración de producción")
-        print("   Asegúrate de que DATABASE_URL apunte a la base de datos de producción")
+        print("Error: No se detecto configuracion de produccion")
+        print("   Asegurate de que DATABASE_URL apunte a la base de datos de produccion")
         return False
     
     success = migrate_database()

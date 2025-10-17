@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from typing import List
 from app.database import get_db
 from app.models.student import Estudiante
@@ -18,10 +18,14 @@ def get_estudiantes(
     """Obtener estudiantes según el rol del usuario"""
     if current_user.rol == "admin":
         # Admin puede ver todos los estudiantes
-        estudiantes = db.query(Estudiante).join(Equipo, Estudiante.equipo_id == Equipo.id, isouter=True).join(Colegio, Equipo.colegio_id == Colegio.id, isouter=True).all()
+        estudiantes = db.query(Estudiante).options(
+            joinedload(Estudiante.equipo).joinedload(Equipo.colegio)
+        ).all()
     else:
         # Tutor solo puede ver estudiantes de su equipo
-        estudiantes = db.query(Estudiante).join(Equipo, Estudiante.equipo_id == Equipo.id, isouter=True).join(Colegio, Equipo.colegio_id == Colegio.id, isouter=True).filter(Estudiante.equipo_id == current_user.equipo_id).all()
+        estudiantes = db.query(Estudiante).options(
+            joinedload(Estudiante.equipo).joinedload(Equipo.colegio)
+        ).filter(Estudiante.equipo_id == current_user.equipo_id).all()
     
     return estudiantes
 

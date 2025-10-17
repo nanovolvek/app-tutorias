@@ -28,21 +28,32 @@ def get_prod_connection():
 
 def sync_attendance_data():
     """Sincronizar datos de asistencia"""
-    print("🔄 Sincronizando datos de asistencia...")
+    print("Sincronizando datos de asistencia...")
     
     local_engine = get_local_connection()
     prod_engine = get_prod_connection()
     
     # Obtener datos de asistencia de estudiantes de local
-    with local_engine.connect() as local_conn:
+    local_conn = local_engine.connect()
+    try:
         local_data = local_conn.execute(text("""
             SELECT estudiante_id, semana, estado, created_at, updated_at
             FROM asistencia_estudiantes
             ORDER BY estudiante_id, semana
         """)).fetchall()
+        
+        # Obtener datos de asistencia de tutores de local
+        local_tutor_data = local_conn.execute(text("""
+            SELECT tutor_id, semana, estado, created_at, updated_at
+            FROM asistencia_tutores
+            ORDER BY tutor_id, semana
+        """)).fetchall()
+    finally:
+        local_conn.close()
     
     # Insertar en producción
-    with prod_engine.connect() as prod_conn:
+    prod_conn = prod_engine.connect()
+    try:
         # Limpiar datos existentes
         prod_conn.execute(text("DELETE FROM asistencia_estudiantes"))
         prod_conn.execute(text("DELETE FROM asistencia_tutores"))
@@ -61,13 +72,6 @@ def sync_attendance_data():
                 'updated_at': row[4]
             })
         
-        # Obtener datos de asistencia de tutores de local
-        local_tutor_data = local_conn.execute(text("""
-            SELECT tutor_id, semana, estado, created_at, updated_at
-            FROM asistencia_tutores
-            ORDER BY tutor_id, semana
-        """)).fetchall()
-        
         # Insertar datos de tutores
         for row in local_tutor_data:
             prod_conn.execute(text("""
@@ -82,12 +86,14 @@ def sync_attendance_data():
             })
         
         prod_conn.commit()
-        print(f"✅ Sincronizados {len(local_data)} registros de asistencia de estudiantes")
-        print(f"✅ Sincronizados {len(local_tutor_data)} registros de asistencia de tutores")
+        print(f"Sincronizados {len(local_data)} registros de asistencia de estudiantes")
+        print(f"Sincronizados {len(local_tutor_data)} registros de asistencia de tutores")
+    finally:
+        prod_conn.close()
 
 def sync_students_data():
     """Sincronizar datos de estudiantes actualizados"""
-    print("🔄 Sincronizando datos de estudiantes...")
+    print("Sincronizando datos de estudiantes...")
     
     local_engine = get_local_connection()
     prod_engine = get_prod_connection()
@@ -136,11 +142,11 @@ def sync_students_data():
             })
         
         prod_conn.commit()
-        print(f"✅ Sincronizados {len(students_data)} estudiantes")
+        print(f"Sincronizados {len(students_data)} estudiantes")
 
 def sync_tutors_data():
     """Sincronizar datos de tutores actualizados"""
-    print("🔄 Sincronizando datos de tutores...")
+    print("Sincronizando datos de tutores...")
     
     local_engine = get_local_connection()
     prod_engine = get_prod_connection()
@@ -176,11 +182,11 @@ def sync_tutors_data():
             })
         
         prod_conn.commit()
-        print(f"✅ Sincronizados {len(tutors_data)} tutores")
+        print(f"Sincronizados {len(tutors_data)} tutores")
 
 def update_sequences():
     """Actualizar secuencias de ID en producción"""
-    print("🔄 Actualizando secuencias de ID...")
+    print("Actualizando secuencias de ID...")
     
     prod_engine = get_prod_connection()
     
@@ -202,18 +208,18 @@ def update_sequences():
         prod_conn.execute(text(f"ALTER SEQUENCE asistencia_tutores_id_seq RESTART WITH {max_tutor_attendance_id + 1}"))
         
         prod_conn.commit()
-        print("✅ Secuencias actualizadas correctamente")
+        print("Secuencias actualizadas correctamente")
 
 def main():
     """Función principal de sincronización"""
-    print("🚀 Iniciando sincronización de datos local → producción")
-    print("⚠️  ADVERTENCIA: Este script modificará la base de datos de producción")
+    print("Iniciando sincronizacion de datos local -> produccion")
+    print("ADVERTENCIA: Este script modificara la base de datos de produccion")
     
     try:
         # Verificar que estamos en producción
         if not os.getenv('DATABASE_URL') or 'localhost' in os.getenv('DATABASE_URL', ''):
-            print("❌ Error: No se detectó configuración de producción")
-            print("   Asegúrate de que DATABASE_URL apunte a la base de datos de producción")
+            print("Error: No se detecto configuracion de produccion")
+            print("   Asegurate de que DATABASE_URL apunte a la base de datos de produccion")
             return False
         
         # Ejecutar sincronización
@@ -222,11 +228,11 @@ def main():
         sync_attendance_data()
         update_sequences()
         
-        print("🎉 Sincronización completada exitosamente!")
+        print("Sincronizacion completada exitosamente!")
         return True
         
     except Exception as e:
-        print(f"❌ Error durante la sincronización: {e}")
+        print(f"Error durante la sincronizacion: {e}")
         return False
 
 if __name__ == "__main__":

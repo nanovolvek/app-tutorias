@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from typing import List
 from app.database import get_db
 from app.models.tutor import Tutor
@@ -18,10 +18,14 @@ def get_tutores(
     """Obtener tutores según el rol del usuario"""
     if current_user.rol == "admin":
         # Admin puede ver todos los tutores
-        tutores = db.query(Tutor).join(Equipo, Tutor.equipo_id == Equipo.id, isouter=True).join(Colegio, Equipo.colegio_id == Colegio.id, isouter=True).all()
+        tutores = db.query(Tutor).options(
+            joinedload(Tutor.equipo).joinedload(Equipo.colegio)
+        ).all()
     else:
         # Tutor solo puede ver tutores de su equipo
-        tutores = db.query(Tutor).join(Equipo, Tutor.equipo_id == Equipo.id, isouter=True).join(Colegio, Equipo.colegio_id == Colegio.id, isouter=True).filter(Tutor.equipo_id == current_user.equipo_id).all()
+        tutores = db.query(Tutor).options(
+            joinedload(Tutor.equipo).joinedload(Equipo.colegio)
+        ).filter(Tutor.equipo_id == current_user.equipo_id).all()
     
     return tutores
 
