@@ -14,6 +14,15 @@ app = FastAPI(
     version="2.0.0"
 )
 
+# Health check endpoint para App Runner
+@app.get("/")
+async def health_check():
+    return {"status": "healthy", "message": "Plataforma Tutorías API is running"}
+
+@app.get("/health")
+async def health():
+    return {"status": "healthy", "message": "Plataforma Tutorías API is running"}
+
 # Configurar CORS para permitir conexiones desde el frontend
 app.add_middleware(
     CORSMiddleware,
