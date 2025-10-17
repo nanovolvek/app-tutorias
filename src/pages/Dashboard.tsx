@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import AttendanceChart from '../components/AttendanceChart';
 
 interface Estudiante {
   id: number;
@@ -34,7 +33,7 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+        const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
         
         // Cargar estudiantes
         const estudiantesResponse = await fetch(`${apiUrl}/estudiantes/`, {

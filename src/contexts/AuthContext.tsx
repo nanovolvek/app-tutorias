@@ -52,7 +52,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+        const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
       const response = await fetch(`${apiUrl}/auth/login-json`, {
         method: 'POST',
         headers: {
