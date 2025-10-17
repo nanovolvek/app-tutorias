@@ -100,6 +100,49 @@
   font-size: 0.95rem;
 }
 
+/* Información del equipo */
+.equipo-info {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.equipo-section {
+  margin-bottom: 1rem;
+}
+
+.equipo-section:last-child {
+  margin-bottom: 0;
+}
+
+.equipo-section h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tutores-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.tutor-name {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 500;
+}
+
+.colegio-name {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 500;
+  font-style: italic;
+}
+
 /* Contenido Principal */
 .main-content {
   flex: 1;

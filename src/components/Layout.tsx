@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useEquipo } from '../hooks/useEquipo';
 import './Layout.css';
 
 interface LayoutProps {
@@ -11,6 +12,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const { user, logout } = useAuth();
+  const { equipoInfo, loading: equipoLoading } = useEquipo();
 
   const getMenuItems = () => {
     const baseItems = [
@@ -45,6 +47,29 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             ✕
           </button>
         </div>
+        
+        {/* Información del equipo para tutores */}
+        {user?.rol === 'tutor' && equipoInfo && (
+          <div className="equipo-info">
+            <div className="equipo-section">
+              <h4>Tutores:</h4>
+              <div className="tutores-list">
+                {equipoInfo.tutores.map((tutor, index) => (
+                  <span key={tutor.id} className="tutor-name">
+                    {tutor.nombre} {tutor.apellido}
+                    {index < equipoInfo.tutores.length - 1 && ', '}
+                  </span>
+                ))}
+              </div>
+            </div>
+            {equipoInfo.colegio && (
+              <div className="equipo-section">
+                <h4>Colegio:</h4>
+                <span className="colegio-name">{equipoInfo.colegio.nombre}</span>
+              </div>
+            )}
+          </div>
+        )}
         
         <nav className="sidebar-nav">
           <ul>
