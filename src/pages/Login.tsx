@@ -19,6 +19,11 @@ const Login: React.FC = () => {
     }
   };
 
+  const handleDemoLogin = (demoEmail: string, demoPassword: string) => {
+    setEmail(demoEmail);
+    setPassword(demoPassword);
+  };
+
   return (
     <div className="login-container">
       <div className="login-card">
@@ -62,15 +67,38 @@ const Login: React.FC = () => {
         <div className="login-demo">
           <h3>Credenciales de prueba:</h3>
           <div className="demo-credentials">
-            <div>
+            <div className="demo-user">
               <strong>Administrador:</strong><br />
               Email: admin@tutorias.com<br />
-              Contraseña: admin
+              Contraseña: admin123
+              <button 
+                className="demo-button"
+                onClick={() => handleDemoLogin('admin@tutorias.com', 'admin123')}
+              >
+                Usar estas credenciales
+              </button>
             </div>
-            <div>
-              <strong>Tutor:</strong><br />
-              Email: tutor@tutorias.com<br />
-              Contraseña: tutor
+            <div className="demo-user">
+              <strong>Tutor Equipo A:</strong><br />
+              Email: tutor1@tutorias.com<br />
+              Contraseña: tutor123
+              <button 
+                className="demo-button"
+                onClick={() => handleDemoLogin('tutor1@tutorias.com', 'tutor123')}
+              >
+                Usar estas credenciales
+              </button>
+            </div>
+            <div className="demo-user">
+              <strong>Tutor Equipo B:</strong><br />
+              Email: tutor2@tutorias.com<br />
+              Contraseña: tutor123
+              <button 
+                className="demo-button"
+                onClick={() => handleDemoLogin('tutor2@tutorias.com', 'tutor123')}
+              >
+                Usar estas credenciales
+              </button>
             </div>
           </div>
         </div>

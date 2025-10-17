@@ -4,48 +4,34 @@ from sqlalchemy.orm import relationship
 from app.database import Base
 import enum
 
-class AttendanceStatus(enum.Enum):
-    ATTENDED = "asistió"
-    NOT_ATTENDED = "no asistió"
-    SUSPENDED = "tutoría suspendida"
-    VACATION = "vacaciones/feriado"
+class EstadoAsistencia(enum.Enum):
+    ASISTIO = "asistió"
+    NO_ASISTIO = "no asistió"
+    SUSPENDIDA = "tutoría suspendida"
+    VACACIONES = "vacaciones/feriado"
 
-class StudentAttendance(Base):
-    __tablename__ = "student_attendance"
+class AsistenciaEstudiante(Base):
+    __tablename__ = "asistencia_estudiantes"
     
     id = Column(Integer, primary_key=True, index=True)
-    student_id = Column(Integer, ForeignKey("students.id"), nullable=False)
-    week = Column(String, nullable=False)  # "semana_1", "semana_2", etc.
-    status = Column(Enum(AttendanceStatus), nullable=False, default=AttendanceStatus.NOT_ATTENDED)
+    estudiante_id = Column(Integer, ForeignKey("estudiantes.id"), nullable=False)
+    semana = Column(String, nullable=False)  # "semana_1", "semana_2", etc.
+    estado = Column(Enum(EstadoAsistencia), nullable=False, default=EstadoAsistencia.NO_ASISTIO)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
-    # Relación con la tabla students
-    student = relationship("Student", back_populates="student_attendance")
+    # Relación con la tabla estudiantes
+    estudiante = relationship("Estudiante", back_populates="asistencia_estudiantes")
 
-class TutorAttendance(Base):
-    __tablename__ = "tutor_attendance"
+class AsistenciaTutor(Base):
+    __tablename__ = "asistencia_tutores"
     
     id = Column(Integer, primary_key=True, index=True)
-    tutor_id = Column(Integer, ForeignKey("tutors.id"), nullable=False)
-    week = Column(String, nullable=False)  # "semana_1", "semana_2", etc.
-    status = Column(Enum(AttendanceStatus), nullable=False, default=AttendanceStatus.NOT_ATTENDED)
+    tutor_id = Column(Integer, ForeignKey("tutores.id"), nullable=False)
+    semana = Column(String, nullable=False)  # "semana_1", "semana_2", etc.
+    estado = Column(Enum(EstadoAsistencia), nullable=False, default=EstadoAsistencia.NO_ASISTIO)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
-    # Relación con la tabla tutors
-    tutor = relationship("Tutor", back_populates="tutor_attendance")
-
-# Mantener el modelo original para compatibilidad (deprecated)
-class Attendance(Base):
-    __tablename__ = "attendance"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    student_id = Column(Integer, ForeignKey("students.id"), nullable=False)
-    week = Column(String, nullable=False)  # "semana_1", "semana_2", etc.
-    attended = Column(Boolean, default=False)  # True si asistió, False si no asistió
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-    
-    # Relación con la tabla students
-    student = relationship("Student", back_populates="attendance")
+    # Relación con la tabla tutores
+    tutor = relationship("Tutor", back_populates="asistencia_tutores")

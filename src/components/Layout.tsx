@@ -12,15 +12,25 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
   const { user, logout } = useAuth();
 
-  const menuItems = [
-    { path: '/', label: 'Dashboard', icon: '📊' },
-    { path: '/estudiantes', label: 'Estudiantes', icon: '👥' },
-    { path: '/tutores', label: 'Tutores', icon: '👨‍🏫' },
-    { path: '/asistencia', label: 'Asistencia', icon: '✅' },
-    { path: '/pruebas', label: 'Pruebas', icon: '📝' },
-    { path: '/tickets', label: 'Tickets', icon: '🎫' },
-    { path: '/material-apoyo', label: 'Material de Apoyo', icon: '📚' },
-  ];
+  const getMenuItems = () => {
+    const baseItems = [
+      { path: '/', label: 'Dashboard', icon: '📊' },
+      { path: '/estudiantes', label: 'Estudiantes', icon: '👥' },
+      { path: '/asistencia', label: 'Asistencia', icon: '✅' },
+      { path: '/pruebas', label: 'Pruebas', icon: '📝' },
+      { path: '/tickets', label: 'Tickets', icon: '🎫' },
+      { path: '/material-apoyo', label: 'Material de Apoyo', icon: '📚' },
+    ];
+
+    // Solo mostrar "Tutores" si es administrador
+    if (user?.rol === 'admin') {
+      baseItems.splice(2, 0, { path: '/tutores', label: 'Tutores', icon: '👨‍🏫' });
+    }
+
+    return baseItems;
+  };
+
+  const menuItems = getMenuItems();
 
   return (
     <div className="layout">
@@ -65,8 +75,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </button>
           <h1>Plataforma Tutorías</h1>
           <div className="user-info">
-            <span>Hola, {user?.full_name}</span>
-            <span className="user-role">({user?.role})</span>
+            <span>Hola, {user?.nombre_completo}</span>
+            <span className="user-role">({user?.rol})</span>
             <button 
               className="logout-btn"
               onClick={logout}

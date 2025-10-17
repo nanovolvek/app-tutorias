@@ -2,87 +2,194 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import AttendanceChart from '../components/AttendanceChart';
 
-interface StudentAttendanceSummary {
-  student_id: number;
-  student_name: string;
-  course: string;
-  school_name: string;
-  total_weeks: number;
-  attended_weeks: number;
-  attendance_percentage: number;
-  weekly_attendance: { [key: string]: boolean };
+interface Estudiante {
+  id: number;
+  nombre: string;
+  apellido: string;
+  curso: string;
+  equipo_id: number;
+}
+
+interface Tutor {
+  id: number;
+  nombre: string;
+  apellido: string;
+  equipo_id: number;
+}
+
+interface Equipo {
+  id: number;
+  nombre: string;
+  descripcion: string;
 }
 
 const Dashboard: React.FC = () => {
-  const [attendanceData, setAttendanceData] = useState<StudentAttendanceSummary[]>([]);
-  const [attendanceLoading, setAttendanceLoading] = useState(true);
-  const [attendanceError, setAttendanceError] = useState('');
-  const { token } = useAuth();
+  const [estudiantes, setEstudiantes] = useState<Estudiante[]>([]);
+  const [tutores, setTutores] = useState<Tutor[]>([]);
+  const [equipos, setEquipos] = useState<Equipo[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const { token, user } = useAuth();
 
   useEffect(() => {
-    const fetchAttendanceData = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('http://localhost:8000/attendance/summary', {
+        // Cargar estudiantes
+        const estudiantesResponse = await fetch('http://localhost:8000/estudiantes/', {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
         });
 
-        if (response.ok) {
-          const data = await response.json();
-          console.log('Datos de asistencia recibidos:', data);
-          setAttendanceData(data);
-        } else {
-          setAttendanceError('Error al cargar los datos de asistencia');
+        if (estudiantesResponse.ok) {
+          const estudiantesData = await estudiantesResponse.json();
+          setEstudiantes(estudiantesData);
         }
+
+        // Cargar tutores
+        const tutoresResponse = await fetch('http://localhost:8000/tutores/', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (tutoresResponse.ok) {
+          const tutoresData = await tutoresResponse.json();
+          setTutores(tutoresData);
+        }
+
+        // Cargar equipos (solo si es admin)
+        if (user?.rol === 'admin') {
+          const equiposResponse = await fetch('http://localhost:8000/equipos/', {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (equiposResponse.ok) {
+            const equiposData = await equiposResponse.json();
+            setEquipos(equiposData);
+          }
+        }
+
       } catch (err) {
-        setAttendanceError('Error de conexión al cargar asistencia');
+        setError('Error de conexión al cargar datos');
       } finally {
-        setAttendanceLoading(false);
+        setLoading(false);
       }
     };
 
     if (token) {
-      fetchAttendanceData();
+      fetchData();
     }
-  }, [token]);
+  }, [token, user]);
+
+  const getEquipoNombre = (equipoId: number) => {
+    const equipo = equipos.find(e => e.id === equipoId);
+    return equipo ? equipo.nombre : `Equipo ${equipoId}`;
+  };
 
   return (
     <div className="page-container">
       <h1 className="page-title">Dashboard</h1>
       <p className="page-description">
         Bienvenido a la Plataforma de Tutorías. Aquí podrás ver un resumen general 
-        del programa, estadísticas de asistencia, y acceso rápido a las funciones principales.
+        del programa y acceso rápido a las funciones principales.
       </p>
 
-      {/* Sección de Gráfico de Asistencia */}
-      <div className="attendance-section">
-        <h2 className="section-title">Estadísticas de Asistencia</h2>
-        
-        {attendanceLoading && (
-          <div className="loading">
-            <p>Cargando datos de asistencia...</p>
+      {loading && (
+        <div className="loading">
+          <p>Cargando datos...</p>
+        </div>
+      )}
+
+      {error && (
+        <div className="error-message">
+          <p>{error}</p>
+        </div>
+      )}
+
+      {!loading && !error && (
+        <>
+          {/* Información del usuario */}
+          <div className="user-info">
+            <h2>Bienvenido, {user?.nombre_completo}</h2>
+            <p>Rol: {user?.rol === 'admin' ? 'Administrador' : 'Tutor'}</p>
+            {user?.equipo_id && (
+              <p>Equipo: {getEquipoNombre(user.equipo_id)}</p>
+            )}
           </div>
-        )}
 
-        {attendanceError && (
-          <div className="error-message">
-            <p>{attendanceError}</p>
+          {/* Estadísticas generales */}
+          <div className="stats-section">
+            <h2 className="section-title">Estadísticas</h2>
+            <div className="stats-grid">
+              <div className="stat-card">
+                <h3>Estudiantes</h3>
+                <p className="stat-number">{estudiantes.length}</p>
+                {user?.rol === 'tutor' && (
+                  <p className="stat-detail">en tu equipo</p>
+                )}
+              </div>
+              
+              <div className="stat-card">
+                <h3>Tutores</h3>
+                <p className="stat-number">{tutores.length}</p>
+                {user?.rol === 'tutor' && (
+                  <p className="stat-detail">en tu equipo</p>
+                )}
+              </div>
+
+              {user?.rol === 'admin' && (
+                <div className="stat-card">
+                  <h3>Equipos</h3>
+                  <p className="stat-number">{equipos.length}</p>
+                </div>
+              )}
+            </div>
           </div>
-        )}
 
-        {!attendanceLoading && !attendanceError && attendanceData.length > 0 && (
-          <AttendanceChart data={attendanceData} />
-        )}
-
-        {!attendanceLoading && !attendanceError && attendanceData.length === 0 && (
-          <div className="no-data">
-            <p>No hay datos de asistencia disponibles</p>
+          {/* Lista de estudiantes */}
+          <div className="students-section">
+            <h2 className="section-title">Estudiantes</h2>
+            {estudiantes.length > 0 ? (
+              <div className="students-grid">
+                {estudiantes.map((estudiante) => (
+                  <div key={estudiante.id} className="student-card">
+                    <h4>{estudiante.nombre} {estudiante.apellido}</h4>
+                    <p>Curso: {estudiante.curso}</p>
+                    <p>Equipo: {getEquipoNombre(estudiante.equipo_id)}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p>No hay estudiantes disponibles</p>
+            )}
           </div>
-        )}
-      </div>
 
+          {/* Lista de tutores (solo para admin) */}
+          {user?.rol === 'admin' && (
+            <div className="tutors-section">
+              <h2 className="section-title">Tutores</h2>
+              {tutores.length > 0 ? (
+                <div className="tutors-grid">
+                  {tutores.map((tutor) => (
+                    <div key={tutor.id} className="tutor-card">
+                      <h4>{tutor.nombre} {tutor.apellido}</h4>
+                      <p>Equipo: {getEquipoNombre(tutor.equipo_id)}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p>No hay tutores disponibles</p>
+              )}
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 };

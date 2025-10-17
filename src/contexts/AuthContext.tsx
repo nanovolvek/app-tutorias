@@ -3,8 +3,9 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 interface User {
   id: number;
   email: string;
-  full_name: string;
-  role: string;
+  nombre_completo: string;
+  rol: string;
+  equipo_id?: number;
   is_active: boolean;
 }
 

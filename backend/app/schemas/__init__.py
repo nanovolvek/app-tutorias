@@ -1,5 +1,9 @@
-from .user import User, UserCreate, UserLogin, Token
-from .school import School, SchoolCreate, SchoolUpdate
-from .tutor import Tutor, TutorCreate, TutorUpdate
-from .student import Student, StudentCreate, StudentUpdate
-from .attendance import Attendance, AttendanceCreate, AttendanceUpdate, StudentAttendanceSummary
+from .user import Usuario, UsuarioCreate, UsuarioLogin, Token
+from .equipo import Equipo, EquipoCreate
+from .tutor import Tutor, TutorCreate
+from .estudiante import Estudiante, EstudianteCreate
+from .attendance import (
+    StudentAttendance, StudentAttendanceCreate, StudentAttendanceUpdate,
+    TutorAttendance, TutorAttendanceCreate, TutorAttendanceUpdate,
+    AttendanceStatus, StudentAttendanceSummary, TutorAttendanceSummary
+)

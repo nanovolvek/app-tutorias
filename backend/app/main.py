@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import auth, schools, tutors, students, attendance, tutor_attendance
+from app.routers import auth_router, equipos_router, tutores_router, estudiantes_router, usuarios_router
 from app.database import engine
 from app import models
 
@@ -10,8 +10,8 @@ models.Base.metadata.create_all(bind=engine)
 # Crear la aplicación FastAPI
 app = FastAPI(
     title="Plataforma Tutorías API",
-    description="API para la gestión de tutores, estudiantes y colegios",
-    version="1.0.0"
+    description="API para la gestión de equipos, tutores y estudiantes",
+    version="2.0.0"
 )
 
 # Configurar CORS para permitir conexiones desde el frontend
@@ -24,12 +24,11 @@ app.add_middleware(
 )
 
 # Incluir los routers
-app.include_router(auth.router)
-app.include_router(schools.router)
-app.include_router(tutors.router)
-app.include_router(students.router)
-app.include_router(attendance.router)
-app.include_router(tutor_attendance.router)
+app.include_router(auth_router)
+app.include_router(equipos_router)
+app.include_router(tutores_router)
+app.include_router(estudiantes_router)
+app.include_router(usuarios_router)
 
 @app.get("/")
 def read_root():

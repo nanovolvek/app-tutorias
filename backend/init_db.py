@@ -78,6 +78,7 @@ def init_db():
         
         # Crear estudiantes de ejemplo
         student1 = models.Student(
+            rut="12.345.678-9",
             first_name="Ana",
             last_name="Silva",
             course="3° Básico",
@@ -85,6 +86,7 @@ def init_db():
         )
         
         student2 = models.Student(
+            rut="98.765.432-1",
             first_name="Diego",
             last_name="Martínez",
             course="1° Medio",
@@ -92,6 +94,7 @@ def init_db():
         )
         
         student3 = models.Student(
+            rut="11.222.333-4",
             first_name="Sofía",
             last_name="López",
             course="5° Básico",

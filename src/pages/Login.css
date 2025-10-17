@@ -117,22 +117,42 @@
 
 .demo-credentials {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 1rem;
   font-size: 0.75rem;
   color: #64748b;
 }
 
-.demo-credentials div {
+.demo-user {
   background: white;
   padding: 0.75rem;
   border-radius: 6px;
   border: 1px solid #e2e8f0;
+  margin-bottom: 0.5rem;
 }
 
-.demo-credentials strong {
+.demo-user strong {
   color: #374151;
   font-weight: 600;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.demo-button {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  transition: background-color 0.2s ease;
+}
+
+.demo-button:hover {
+  background: #5a67d8;
 }
 
 /* Responsive */
