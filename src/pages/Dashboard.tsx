@@ -34,8 +34,10 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+        
         // Cargar estudiantes
-        const estudiantesResponse = await fetch('http://localhost:8000/estudiantes/', {
+        const estudiantesResponse = await fetch(`${apiUrl}/estudiantes/`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -48,7 +50,7 @@ const Dashboard: React.FC = () => {
         }
 
         // Cargar tutores
-        const tutoresResponse = await fetch('http://localhost:8000/tutores/', {
+        const tutoresResponse = await fetch(`${apiUrl}/tutores/`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -62,7 +64,7 @@ const Dashboard: React.FC = () => {
 
         // Cargar equipos (solo si es admin)
         if (user?.rol === 'admin') {
-          const equiposResponse = await fetch('http://localhost:8000/equipos/', {
+          const equiposResponse = await fetch(`${apiUrl}/equipos/`, {
             headers: {
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json',

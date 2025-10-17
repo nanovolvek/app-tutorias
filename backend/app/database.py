@@ -9,6 +9,9 @@ load_dotenv()
 # URL de la base de datos desde variables de entorno
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:tu_contraseña@localhost:5432/tutorias_db")
 
+# Configuración de CORS desde variables de entorno
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:3000").split(",")
+
 # Crear el motor de la base de datos
 engine = create_engine(DATABASE_URL)
 

@@ -52,7 +52,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/auth/login-json', {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${apiUrl}/auth/login-json`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -68,7 +69,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setToken(data.access_token);
         
         // Obtener información del usuario
-        const userResponse = await fetch('http://localhost:8000/auth/me', {
+        const userResponse = await fetch(`${apiUrl}/auth/me`, {
           headers: {
             'Authorization': `Bearer ${data.access_token}`,
           },

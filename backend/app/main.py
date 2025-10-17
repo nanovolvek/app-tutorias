@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import auth_router, equipos_router, tutores_router, estudiantes_router, usuarios_router
-from app.database import engine
+from app.database import engine, ALLOWED_ORIGINS
 from app import models
 
 # Crear las tablas en la base de datos
@@ -17,7 +17,7 @@ app = FastAPI(
 # Configurar CORS para permitir conexiones desde el frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"],  # URLs del frontend
+    allow_origins=ALLOWED_ORIGINS,  # URLs del frontend desde variables de entorno
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
