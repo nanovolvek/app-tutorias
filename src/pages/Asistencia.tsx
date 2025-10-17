@@ -38,7 +38,7 @@ const Asistencia: React.FC = () => {
 
   const fetchStudents = async () => {
     try {
-      const response = await fetch('http://localhost:8000/students/', {
+      const response = await fetch('http://localhost:8000/estudiantes/', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -55,7 +55,7 @@ const Asistencia: React.FC = () => {
 
   const fetchTutors = async () => {
     try {
-      const response = await fetch('http://localhost:8000/tutors/', {
+      const response = await fetch('http://localhost:8000/tutores/', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',

@@ -4,6 +4,7 @@ from typing import List
 from app.database import get_db
 from app.models.tutor import Tutor
 from app.models.equipo import Equipo
+from app.models.school import Colegio
 from app.schemas.tutor import Tutor as TutorSchema, TutorCreate
 from app.auth.dependencies import get_current_active_user, get_admin_user, get_tutor_user
 
@@ -17,10 +18,10 @@ def get_tutores(
     """Obtener tutores según el rol del usuario"""
     if current_user.rol == "admin":
         # Admin puede ver todos los tutores
-        tutores = db.query(Tutor).all()
+        tutores = db.query(Tutor).join(Equipo, Tutor.equipo_id == Equipo.id, isouter=True).join(Colegio, Equipo.colegio_id == Colegio.id, isouter=True).all()
     else:
         # Tutor solo puede ver tutores de su equipo
-        tutores = db.query(Tutor).filter(Tutor.equipo_id == current_user.equipo_id).all()
+        tutores = db.query(Tutor).join(Equipo, Tutor.equipo_id == Equipo.id, isouter=True).join(Colegio, Equipo.colegio_id == Colegio.id, isouter=True).filter(Tutor.equipo_id == current_user.equipo_id).all()
     
     return tutores
 
@@ -62,8 +63,57 @@ def create_tutor(
             detail="Equipo no encontrado"
         )
     
-    db_tutor = Tutor(**tutor.dict())
-    db.add(db_tutor)
+    # Verificar que el email no esté en uso
+    existing_tutor = db.query(Tutor).filter(Tutor.email == tutor.email).first()
+    if existing_tutor:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Ya existe un tutor con este email"
+        )
+    
+    try:
+        db_tutor = Tutor(**tutor.dict())
+        db.add(db_tutor)
+        db.commit()
+        db.refresh(db_tutor)
+        return db_tutor
+    except Exception as e:
+        db.rollback()
+        # Si hay error de ID duplicado, intentar obtener el siguiente ID disponible
+        if "llave duplicada" in str(e) or "duplicate key" in str(e):
+            # Obtener el máximo ID actual
+            max_id = db.query(Tutor).order_by(Tutor.id.desc()).first()
+            next_id = (max_id.id + 1) if max_id else 1
+            
+            # Crear el tutor con ID explícito
+            tutor_data = tutor.dict()
+            db_tutor = Tutor(id=next_id, **tutor_data)
+            db.add(db_tutor)
+            db.commit()
+            db.refresh(db_tutor)
+            return db_tutor
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Error al crear el tutor: {str(e)}"
+            )
+
+@router.delete("/{tutor_id}")
+def delete_tutor(
+    tutor_id: int,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_admin_user)
+):
+    """Eliminar un tutor (solo administradores)"""
+    tutor = db.query(Tutor).filter(Tutor.id == tutor_id).first()
+    if not tutor:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Tutor no encontrado"
+        )
+    
+    # Eliminar físicamente
+    db.delete(tutor)
     db.commit()
-    db.refresh(db_tutor)
-    return db_tutor
+    
+    return {"message": "Tutor eliminado exitosamente"}

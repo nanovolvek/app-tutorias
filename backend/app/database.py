@@ -4,7 +4,8 @@ from sqlalchemy.orm import sessionmaker
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+# Cargar solo el archivo .env local, no .env.aws
+load_dotenv('.env')
 
 # URL de la base de datos desde variables de entorno
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:tu_contraseña@localhost:5432/tutorias_db")

@@ -40,7 +40,7 @@ export const useEquipo = () => {
       setError(null);
 
       try {
-        const apiUrl = (import.meta as any).env?.VITE_API_URL || 'https://wh7jum5qhe.us-east-1.awsapprunner.com';
+        const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
         const response = await fetch(`${apiUrl}/equipos/mi-equipo/`, {
           headers: {
             'Authorization': `Bearer ${token}`,

@@ -10,10 +10,16 @@ class EquipoBase(BaseModel):
 class EquipoCreate(EquipoBase):
     pass
 
+class ColegioInfo(BaseModel):
+    id: int
+    nombre: str
+    comuna: str
+
 class Equipo(EquipoBase):
     id: int
     created_at: datetime
     updated_at: Optional[datetime] = None
+    colegio: Optional[ColegioInfo] = None
     
     class Config:
         from_attributes = True

@@ -15,24 +15,24 @@ def init_db():
     
     try:
         # Verificar si ya existen datos
-        if db.query(models.User).first():
+        if db.query(models.Usuario).first():
             print("La base de datos ya tiene datos. Saltando inicialización.")
             return
         
         # Crear usuarios de ejemplo
-        admin_user = models.User(
+        admin_user = models.Usuario(
             email="admin@tutorias.com",
             hashed_password=get_password_hash("admin"),
-            full_name="Administrador Sistema",
-            role="admin",
+            nombre_completo="Administrador Sistema",
+            rol="admin",
             is_active=True
         )
         
-        tutor_user = models.User(
+        tutor_user = models.Usuario(
             email="tutor@tutorias.com",
             hashed_password=get_password_hash("tutor"),
-            full_name="Tutor Ejemplo",
-            role="tutor",
+            nombre_completo="Tutor Equipo A",
+            rol="tutor",
             is_active=True
         )
         
@@ -40,78 +40,121 @@ def init_db():
         db.add(tutor_user)
         
         # Crear colegios de ejemplo
-        school1 = models.School(
-            name="Colegio San Patricio",
+        colegio1 = models.Colegio(
+            nombre="Colegio San Patricio",
             comuna="Las Condes"
         )
         
-        school2 = models.School(
-            name="Liceo Manuel Barros Borgoño",
+        colegio2 = models.Colegio(
+            nombre="Liceo Manuel Barros Borgoño",
             comuna="Santiago"
         )
         
-        db.add(school1)
-        db.add(school2)
+        db.add(colegio1)
+        db.add(colegio2)
         db.commit()
         
         # Refrescar para obtener los IDs
-        db.refresh(school1)
-        db.refresh(school2)
+        db.refresh(colegio1)
+        db.refresh(colegio2)
+        
+        # Crear equipos de ejemplo
+        equipo1 = models.Equipo(
+            nombre="Equipo 1",
+            descripcion="Equipo de tutores para Colegio San Patricio",
+            colegio_id=colegio1.id
+        )
+        
+        equipo2 = models.Equipo(
+            nombre="Equipo 2",
+            descripcion="Equipo de tutores para Liceo Manuel Barros Borgoño",
+            colegio_id=colegio2.id
+        )
+        
+        db.add(equipo1)
+        db.add(equipo2)
+        db.commit()
+        
+        # Refrescar para obtener los IDs
+        db.refresh(equipo1)
+        db.refresh(equipo2)
+        
+        # Asignar equipo al tutor
+        tutor_user.equipo_id = equipo1.id
         
         # Crear tutores de ejemplo
         tutor1 = models.Tutor(
-            first_name="María",
-            last_name="González",
-            email="maria.gonzalez@email.com",
-            school_id=school1.id
+            nombre="Ana",
+            apellido="Garcia",
+            email="ana.garcia@email.com",
+            equipo_id=equipo1.id
         )
         
         tutor2 = models.Tutor(
-            first_name="Carlos",
-            last_name="Rodríguez",
-            email="carlos.rodriguez@email.com",
-            school_id=school2.id
+            nombre="Carlos",
+            apellido="Lopez",
+            email="carlos.lopez@email.com",
+            equipo_id=equipo1.id
         )
         
         db.add(tutor1)
         db.add(tutor2)
         
         # Crear estudiantes de ejemplo
-        student1 = models.Student(
+        estudiante1 = models.Estudiante(
             rut="12.345.678-9",
-            first_name="Ana",
-            last_name="Silva",
-            course="3° Básico",
-            school_id=school1.id
+            nombre="Sofia",
+            apellido="Silva",
+            curso="3° Basico",
+            equipo_id=equipo1.id
         )
         
-        student2 = models.Student(
+        estudiante2 = models.Estudiante(
             rut="98.765.432-1",
-            first_name="Diego",
-            last_name="Martínez",
-            course="1° Medio",
-            school_id=school2.id
+            nombre="Mateo",
+            apellido="Gonzalez",
+            curso="3° Basico",
+            equipo_id=equipo1.id
         )
         
-        student3 = models.Student(
+        estudiante3 = models.Estudiante(
             rut="11.222.333-4",
-            first_name="Sofía",
-            last_name="López",
-            course="5° Básico",
-            school_id=school1.id
+            nombre="Isabella",
+            apellido="Perez",
+            curso="4° Basico",
+            equipo_id=equipo1.id
         )
         
-        db.add(student1)
-        db.add(student2)
-        db.add(student3)
+        estudiante4 = models.Estudiante(
+            rut="55.666.777-8",
+            nombre="Santiago",
+            apellido="Hernandez",
+            curso="4° Basico",
+            equipo_id=equipo1.id
+        )
+        
+        estudiante5 = models.Estudiante(
+            rut="99.888.777-6",
+            nombre="Valentina",
+            apellido="Torres",
+            curso="5° Basico",
+            equipo_id=equipo1.id
+        )
+        
+        db.add(estudiante1)
+        db.add(estudiante2)
+        db.add(estudiante3)
+        db.add(estudiante4)
+        db.add(estudiante5)
         
         db.commit()
         
         print("Base de datos inicializada correctamente con datos de ejemplo:")
         print("   - 2 usuarios (admin@tutorias.com / tutor@tutorias.com)")
         print("   - 2 colegios")
+        print("   - 2 equipos")
         print("   - 2 tutores")
-        print("   - 3 estudiantes")
+        print("   - 5 estudiantes")
         print("\nCredenciales de acceso:")
         print("   Admin: admin@tutorias.com / admin")
         print("   Tutor: tutor@tutorias.com / tutor")

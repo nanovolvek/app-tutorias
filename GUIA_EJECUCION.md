@@ -1,210 +1,257 @@
-# 🚀 Guía Completa para Ejecutar la Aplicación de Tutorías
+# 🚀 Guía de Ejecución - Aplicación de Tutorías
 
-## 📋 Resumen de la Aplicación
-
-Esta es una aplicación web completa de gestión de tutorías con:
+## 📋 Resumen
+Aplicación web completa de gestión de tutorías:
 - **Frontend:** React + TypeScript + Vite
 - **Backend:** FastAPI + PostgreSQL
 - **Autenticación:** JWT con roles (admin/tutor)
-- **Base de datos:** PostgreSQL con datos de ejemplo
 
-## 🗂️ Estructura del Proyecto
+## 🗄️ Bases de Datos
 
-```
-app-tutorias/
-├── src/                          # Frontend React
-│   ├── components/               # Componentes reutilizables
-│   ├── pages/                    # Páginas de la aplicación
-│   ├── contexts/                 # Contextos de React (Auth)
-│   └── ...
-├── backend/                      # Backend FastAPI
-│   ├── app/                      # Código de la aplicación
-│   ├── venv/                     # Entorno virtual Python
-│   └── .env                      # Variables de entorno
-└── ...
-```
+### **Local vs Producción:**
+- **Local:** PostgreSQL en tu máquina (`localhost:5432`)
+- **Producción:** AWS RDS PostgreSQL (servidor remoto)
 
-## 🔧 PASOS PARA EJECUTAR LA APLICACIÓN
+**⚠️ IMPORTANTE:** Son bases de datos completamente separadas. Los cambios locales NO afectan producción automáticamente.
+
+## 🔧 Configuración Inicial
 
 ### 1. Prerrequisitos
+- Node.js (v16+)
+- Python (v3.8+)
+- PostgreSQL local
 
-Asegúrate de tener instalado:
-- **Node.js** (versión 16 o superior)
-- **Python** (versión 3.8 o superior)
-- **PostgreSQL** (con usuario `postgres` y contraseña `nanopostgres`)
-
-### 2. Configurar la Base de Datos
-
-1. **Conectarse a PostgreSQL:**
-   ```bash
-   psql -U postgres
-   ```
-
-2. **Crear la base de datos:**
-   ```sql
-   CREATE DATABASE tutorias_db;
-   \q
-   ```
-
-### 3. Configurar el Backend
-
-1. **Navegar al directorio backend:**
-   ```bash
-   cd backend
-   ```
-
-2. **Activar el entorno virtual:**
-   ```bash
-   # Windows
-   .\venv\Scripts\activate
-   
-   # Linux/Mac
-   source venv/bin/activate
-   ```
-
-3. **Instalar dependencias (si es necesario):**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Verificar archivo .env:**
-   El archivo `backend/.env` debe contener:
-   ```
-   DATABASE_URL=postgresql://postgres:nanopostgres@localhost:5432/tutorias_db
-   SECRET_KEY=tu_clave_secreta_muy_larga_y_segura_aqui_123456789_para_jwt_tokens
-   ALGORITHM=HS256
-   ACCESS_TOKEN_EXPIRE_MINUTES=30
-   ```
-
-5. **Inicializar la base de datos:**
-   ```bash
-   python init_db.py
-   ```
-
-6. **Ejecutar el backend:**
-   ```bash
-   python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-   ```
-
-   El backend estará disponible en: http://localhost:8000
-
-### 4. Configurar el Frontend
-
-1. **Abrir una nueva terminal** (mantener el backend corriendo)
-
-2. **Navegar al directorio raíz:**
-   ```bash
-   cd ..  # Si estás en la carpeta backend
-   ```
-
-3. **Instalar dependencias:**
-   ```bash
-   npm install
-   ```
-
-4. **Ejecutar el frontend:**
-   ```bash
-   npm run dev
-   ```
-
-   El frontend estará disponible en: http://localhost:5173
-
-## 🔑 Credenciales de Prueba
-
-- **Administrador:**
-  - Email: `admin@tutorias.com`
-  - Contraseña: `admin`
-
-- **Tutor:**
-  - Email: `tutor@tutorias.com`
-  - Contraseña: `tutor`
-
-## 🎯 Cómo Usar la Aplicación
-
-1. **Abrir el navegador** y ir a: http://localhost:5173
-2. **Iniciar sesión** con las credenciales de prueba
-3. **Navegar** por el menú lateral para acceder a las diferentes secciones:
-   - 📊 Dashboard
-   - 👥 Estudiantes
-   - 👨‍🏫 Tutores
-   - ✅ Asistencia
-   - 📝 Pruebas
-   - 🎫 Tickets
-   - 📚 Material de Apoyo
-
-## 🔍 Verificar que Todo Funciona
-
-### Backend:
-- **Health check:** http://localhost:8000/health
-- **Documentación API:** http://localhost:8000/docs
-
-### Frontend:
-- **Aplicación:** http://localhost:5173
-- **Login funcional** con las credenciales de prueba
-
-## 🚨 Solución de Problemas
-
-### Error: "uvicorn no se reconoce"
+### 2. Base de Datos Local
 ```bash
-# Usar python -m uvicorn en lugar de uvicorn directamente
-python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+# Conectar a PostgreSQL
+psql -U postgres
+
+# Crear base de datos
+CREATE DATABASE tutorias_db;
+\q
 ```
 
-### Error: "Cannot find package '@vitejs/plugin-react'"
+### 3. Backend
 ```bash
-# Instalar el plugin faltante
-npm install @vitejs/plugin-react --save-dev
-```
-
-### Error de conexión a la base de datos
-- Verificar que PostgreSQL esté corriendo
-- Verificar la contraseña en el archivo `.env`
-- Verificar que la base de datos `tutorias_db` exista
-
-### Error de CORS
-- Verificar que el backend esté corriendo en puerto 8000
-- Verificar que el frontend esté corriendo en puerto 5173
-
-## 📝 Comandos Rápidos
-
-### Iniciar todo desde cero:
-```bash
-# Terminal 1 - Backend
 cd backend
 .\venv\Scripts\activate
-python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+pip install -r requirements.txt
 
-# Terminal 2 - Frontend
-cd ..
+# Configurar .env
+DATABASE_URL=postgresql://postgres:nanopostgres@localhost:5432/tutorias_db
+SECRET_KEY=tu_clave_secreta_muy_larga_y_segura_aqui_123456789
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+# Inicializar BD
+python init_db.py
+
+# Ejecutar
+python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+### 4. Frontend
+```bash
+# Nueva terminal
+npm install
 npm run dev
 ```
 
-### Verificar puertos:
-```bash
-# Windows
-netstat -an | findstr ":8000\|:5173"
+## 🚀 Flujo de Trabajo de Desarrollo
 
-# Linux/Mac
-netstat -an | grep ":8000\|:5173"
+### **1. Antes de Empezar**
+```bash
+git pull origin main  # Siempre sincronizar con producción
+```
+
+### **2. Crear Rama para Cambios**
+```bash
+git checkout -b feature/nombre-de-tu-feature
+# o
+git checkout -b fix/descripcion-del-fix
+```
+
+### **3. Desarrollo Local**
+- Modificar código frontend/backend
+- Probar localmente en http://localhost:5173
+- Verificar que todo funcione
+
+### **4. Cambios en Base de Datos**
+```bash
+# Crear migración
+cd backend
+alembic revision --autogenerate -m "Descripción del cambio"
+
+# Aplicar migración local
+alembic upgrade head
+```
+
+### **5. Confirmar Cambios**
+```bash
+git add .
+git commit -m "feat: Descripción del cambio"
+git push origin feature/nombre-de-tu-feature
+```
+
+### **6. Desplegar a Producción**
+```bash
+# Fusionar con main
+git checkout main
+git merge feature/nombre-de-tu-feature
+git push origin main
+
+# AWS App Runner se encarga del despliegue automático
+```
+
+## 🔑 Credenciales de Prueba
+
+- **Admin:** `admin@tutorias.com` / `admin`
+- **Tutor:** `tutor@tutorias.com` / `tutor`
+
+## 🌐 URLs
+
+- **Local Frontend:** http://localhost:5173
+- **Local Backend:** http://localhost:8000
+- **Producción Frontend:** https://main.d1d2p1x4drhejl.amplifyapp.com
+- **Producción Backend:** https://wh7jum5qhe.us-east-1.awsapprunner.com
+
+## ⚠️ Reglas Importantes
+
+1. **NUNCA trabajes directamente en `main`**
+2. **Siempre sincroniza con `main` antes de empezar**
+3. **Prueba todo localmente antes de subir**
+4. **Para cambios de BD, crea migraciones de Alembic**
+5. **Haz commits descriptivos** (`feat:`, `fix:`, `docs:`)
+
+## 🚨 Solución de Problemas
+
+### Error de conexión a BD
+- Verificar que PostgreSQL esté corriendo
+- Verificar credenciales en `.env`
+
+### Error de CORS
+- Backend en puerto 8000
+- Frontend en puerto 5173
+
+### Error de TypeScript
+- Verificar que no hay variables no utilizadas
+- Ejecutar `npm run build` para verificar
+
+## 📝 Comandos Rápidos
+
+```bash
+# Iniciar todo
+# Terminal 1
+cd backend && .\venv\Scripts\activate && python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+
+# Terminal 2
+npm run dev
+
+# Verificar puertos
+netstat -an | findstr ":8000\|:5173"
 ```
 
 ## ✅ Verificación Final
 
-Si todo funciona correctamente, deberías poder:
-1. ✅ Ver la página de login en http://localhost:5173
-2. ✅ Iniciar sesión con las credenciales de prueba
-3. ✅ Ver el dashboard con tu información de usuario
-4. ✅ Navegar entre las diferentes secciones
-5. ✅ Cerrar sesión y volver a la página de login
-6. ✅ Ver la documentación de la API en http://localhost:8000/docs
+1. ✅ Login funcional en http://localhost:5173
+2. ✅ Dashboard con información del usuario
+3. ✅ Navegación entre secciones
+4. ✅ API funcionando en http://localhost:8000/docs
 
-## 🎉 ¡Listo!
+¡Listo para desarrollar! 🎉
 
-Tu aplicación de tutorías está funcionando correctamente con:
-- Backend FastAPI con PostgreSQL
-- Frontend React con login funcional
-- Sistema de roles (admin/tutor)
-- API REST completa
-- Documentación automática
+## 🔄 Flujo de Trabajo para Desarrollo y Producción
 
-¡Disfruta usando tu aplicación! 🚀
+### **Desarrollo Local (Sin cambios de BD)**
+```bash
+# 1. Crear rama
+git checkout -b feature/nueva-funcionalidad
+
+# 2. Desarrollar localmente
+# ... hacer cambios en código ...
+
+# 3. Probar localmente
+npm run dev  # frontend
+python -m uvicorn app.main:app --reload  # backend
+
+# 4. Commit y push
+git add .
+git commit -m "feat: Nueva funcionalidad"
+git push origin feature/nueva-funcionalidad
+
+# 5. Merge a main
+git checkout main
+git merge feature/nueva-funcionalidad
+git push origin main
+
+# 6. AWS App Runner despliega automáticamente
+```
+
+### **Cambios de Base de Datos (CRÍTICO)**
+
+#### **Opción A: Migraciones (Recomendado)**
+```bash
+# 1. Crear migración para el cambio
+cd backend
+alembic revision --autogenerate -m "Descripción del cambio"
+
+# 2. Probar migración localmente
+alembic upgrade head
+
+# 3. Commit de la migración
+git add alembic/versions/
+git commit -m "feat: Agregar migración para cambio de BD"
+
+# 4. Deploy a producción
+git push origin main
+
+# 5. AWS App Runner aplica la migración automáticamente
+```
+
+#### **Opción B: Scripts de Datos (Para datos de prueba)**
+```bash
+# 1. Crear script de datos
+# backend/scripts/init_prod_data.py
+
+# 2. Ejecutar solo en producción (una vez)
+# AWS App Runner ejecuta el script al desplegar
+```
+
+## 🚨 Reglas de Oro
+
+### **✅ SÍ hacer:**
+- Desarrollar localmente
+- Usar migraciones para cambios de BD
+- Commit código y migraciones
+- Deploy automático
+
+### **❌ NO hacer:**
+- Sincronizar BD local → producción
+- Modificar producción directamente
+- Commit datos reales
+
+### **Separación de Entornos:**
+- **Local:** Para desarrollo y testing
+- **Producción:** Solo para datos reales de usuarios
+
+## 🔧 Sincronización de Datos
+
+### **Para obtener datos de producción en local:**
+```bash
+# Usar el script de sincronización (solo cuando sea necesario)
+python sync_prod_to_local.py
+```
+
+### **Para cambios de datos de prueba:**
+1. Modificar datos localmente
+2. Crear script de inicialización
+3. Commit script (no los datos)
+4. Deploy → Script se ejecuta en producción
+
+## 📋 Resumen del Flujo
+
+1. **Desarrollo:** Trabaja localmente con BD local
+2. **Testing:** Prueba todo en tu entorno local
+3. **Código:** Commit solo código (no datos)
+4. **BD:** Usa migraciones para cambios estructurales
+5. **Deploy:** Push a GitHub → AWS App Runner despliega automáticamente

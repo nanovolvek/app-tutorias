@@ -2,9 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 from app.database import get_db
-from app.models.attendance import Attendance, StudentAttendance, AttendanceStatus
-from app.models.student import Student
-from app.models.school import School
+from app.models.attendance import AsistenciaEstudiante, AsistenciaTutor, EstadoAsistencia
+from app.models.student import Estudiante
+from app.models.tutor import Tutor
+from app.models.school import Colegio
 from app.schemas.attendance import (
     AttendanceCreate, 
     AttendanceUpdate, 
@@ -24,14 +25,14 @@ def get_attendance_summary(
 ):
     """Obtiene el resumen de asistencia de todos los estudiantes con porcentajes"""
     
-    # Obtener todos los estudiantes con sus colegios
-    students = db.query(Student).join(School).all()
+    # Obtener todos los estudiantes con sus equipos y colegios
+    estudiantes = db.query(Estudiante).join(Colegio, Estudiante.equipo_id == Colegio.id).all()
     
     summary = []
     
-    for student in students:
+    for estudiante in estudiantes:
         # Obtener registros de asistencia del estudiante
-        attendance_records = db.query(StudentAttendance).filter(StudentAttendance.student_id == student.id).all()
+        attendance_records = db.query(AsistenciaEstudiante).filter(AsistenciaEstudiante.estudiante_id == estudiante.id).all()
         
         # Crear diccionario de asistencia por semana
         weekly_attendance = {}
@@ -44,8 +45,8 @@ def get_attendance_summary(
         
         # Marcar las semanas donde el estudiante asistió
         for record in attendance_records:
-            weekly_attendance[record.week] = record.status.value
-            if record.status == AttendanceStatus.ATTENDED:
+            weekly_attendance[record.semana] = record.estado.value
+            if record.estado == EstadoAsistencia.ASISTIO:
                 attended_weeks += 1
         
         # Calcular porcentaje de asistencia
@@ -53,10 +54,10 @@ def get_attendance_summary(
         attendance_percentage = (attended_weeks / total_weeks) * 100 if total_weeks > 0 else 0
         
         summary.append(StudentAttendanceSummary(
-            student_id=student.id,
-            student_name=f"{student.first_name} {student.last_name}",
-            course=student.course,
-            school_name=student.school.name,
+            student_id=estudiante.id,
+            student_name=f"{estudiante.nombre} {estudiante.apellido}",
+            course=estudiante.curso,
+            school_name=estudiante.equipo.nombre if estudiante.equipo else "Sin equipo",
             total_weeks=total_weeks,
             attended_weeks=attended_weeks,
             attendance_percentage=round(attendance_percentage, 2),
@@ -64,6 +65,72 @@ def get_attendance_summary(
         ))
     
     return summary
+
+@router.get("/students/attendance-stats")
+def get_students_attendance_stats(
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """Obtiene estadísticas de asistencia de estudiantes para el dashboard"""
+    
+    # Obtener todos los estudiantes
+    estudiantes = db.query(Estudiante).all()
+    
+    stats = []
+    total_attended = 0
+    total_possible = 0
+    students_with_3_plus_absences = []
+    
+    for estudiante in estudiantes:
+        # Obtener registros de asistencia del estudiante
+        attendance_records = db.query(AsistenciaEstudiante).filter(
+            AsistenciaEstudiante.estudiante_id == estudiante.id
+        ).all()
+        
+        attended_weeks = 0
+        absent_weeks = 0
+        
+        for record in attendance_records:
+            if record.estado == EstadoAsistencia.ASISTIO:
+                attended_weeks += 1
+            elif record.estado == EstadoAsistencia.NO_ASISTIO:
+                absent_weeks += 1
+        
+        # Calcular porcentaje de asistencia
+        total_weeks = len(attendance_records) if attendance_records else 10
+        attendance_percentage = (attended_weeks / total_weeks) * 100 if total_weeks > 0 else 0
+        
+        stats.append({
+            "student_id": estudiante.id,
+            "student_name": f"{estudiante.nombre} {estudiante.apellido}",
+            "course": estudiante.curso,
+            "attendance_percentage": round(attendance_percentage, 2),
+            "attended_weeks": attended_weeks,
+            "absent_weeks": absent_weeks,
+            "total_weeks": total_weeks
+        })
+        
+        total_attended += attended_weeks
+        total_possible += total_weeks
+        
+        # Verificar si tiene más de 3 inasistencias
+        if absent_weeks > 3:
+            students_with_3_plus_absences.append({
+                "student_id": estudiante.id,
+                "student_name": f"{estudiante.nombre} {estudiante.apellido}",
+                "course": estudiante.curso,
+                "absent_weeks": absent_weeks
+            })
+    
+    # Calcular promedio general
+    overall_average = (total_attended / total_possible) * 100 if total_possible > 0 else 0
+    
+    return {
+        "students_stats": stats,
+        "overall_average": round(overall_average, 2),
+        "students_with_3_plus_absences": students_with_3_plus_absences,
+        "total_students": len(estudiantes)
+    }
 
 @router.post("/", response_model=AttendanceCreate)
 def create_attendance_record(

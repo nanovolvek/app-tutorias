@@ -16,7 +16,7 @@ def get_equipos(
     current_user = Depends(get_current_active_user)
 ):
     """Obtener todos los equipos"""
-    equipos = db.query(Equipo).all()
+    equipos = db.query(Equipo).join(Colegio, Equipo.colegio_id == Colegio.id, isouter=True).all()
     return equipos
 
 @router.get("/{equipo_id}", response_model=EquipoSchema)

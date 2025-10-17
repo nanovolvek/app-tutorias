@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import auth_router, equipos_router, tutores_router, estudiantes_router, usuarios_router
+from app.routers import auth_router, equipos_router, tutores_router, estudiantes_router, usuarios_router, attendance
 from app.database import engine, ALLOWED_ORIGINS
 from app import models
 
@@ -38,6 +38,7 @@ app.include_router(equipos_router)
 app.include_router(tutores_router)
 app.include_router(estudiantes_router)
 app.include_router(usuarios_router)
+app.include_router(attendance.router)
 
 @app.get("/")
 def read_root():
