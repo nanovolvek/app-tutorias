@@ -11,3 +11,6 @@ class Colegio(Base):
     comuna = Column(String, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    # Relación con equipos
+    equipos = relationship("Equipo", back_populates="colegio")

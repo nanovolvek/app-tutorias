@@ -1,5 +1,4 @@
 import os
-import sys
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from app.database import SessionLocal, engine
@@ -9,31 +8,22 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-def init_rds_final():
-    """Inicializa la base de datos en AWS RDS con datos de ejemplo"""
-    print("Inicializando base de datos en AWS RDS...")
-    
-    # Verificar que DATABASE_URL esté configurada
-    database_url = os.getenv("DATABASE_URL")
-    if not database_url:
-        print("ERROR: DATABASE_URL no esta configurada")
-        return False
-    
-    print(f"Conectando a: {database_url}")
+def recreate_db_with_colegios():
+    """Recrea la base de datos con la nueva estructura de colegios"""
+    print("Recreando base de datos con estructura de colegios...")
     
     try:
-        # Crear las tablas
-        print("Creando tablas...")
+        # Eliminar todas las tablas
+        print("Eliminando tablas existentes...")
+        models.Base.metadata.drop_all(bind=engine)
+        
+        # Crear todas las tablas
+        print("Creando nuevas tablas...")
         models.Base.metadata.create_all(bind=engine)
         
         db = SessionLocal()
         
         try:
-            # Verificar si ya existen datos
-            if db.query(models.Usuario).first():
-                print("La base de datos ya tiene datos. Saltando inicializacion.")
-                return True
-            
             print("Creando colegios...")
             # Crear colegios
             colegios_data = [
@@ -149,8 +139,9 @@ def init_rds_final():
             
             db.commit()
             
-            print("Base de datos inicializada correctamente en AWS RDS!")
-            print(f"   - 3 equipos (A, B, C)")
+            print("Base de datos recreada correctamente!")
+            print(f"   - 3 colegios")
+            print(f"   - 3 equipos (A, B, C) con colegios asignados")
             print(f"   - 3 usuarios (1 admin, 2 tutores)")
             print(f"   - 6 tutores (2 por equipo)")
             print(f"   - 15 estudiantes (5 por equipo)")
@@ -170,12 +161,7 @@ def init_rds_final():
             
     except Exception as e:
         print(f"Error de conexion a RDS: {e}")
-        print("\nVerificar:")
-        print("1. RDS tiene 'Public access: Yes'")
-        print("2. Security Group permite conexiones en puerto 5432")
-        print("3. DATABASE_URL es correcta")
         return False
 
 if __name__ == "__main__":
-    success = init_rds_final()
-    sys.exit(0 if success else 1)
+    recreate_db_with_colegios()
