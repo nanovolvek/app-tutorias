@@ -1,6 +1,8 @@
 # Usar imagen oficial de Python 3.12
 FROM python:3.12-slim
 
+# Forzar rebuild - versión 2
+
 # Establecer directorio de trabajo
 WORKDIR /app
 
