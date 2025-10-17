@@ -23,10 +23,10 @@ from app.auth.security import get_password_hash
 
 def init_rds_db():
     """Inicializa la base de datos en AWS RDS con datos de ejemplo"""
-    print("🚀 Inicializando base de datos en AWS RDS...")
+    print("Inicializando base de datos en AWS RDS...")
     
     # Crear las tablas
-    print("📋 Creando tablas...")
+    print("Creando tablas...")
     models.Base.metadata.create_all(bind=engine)
     
     db = SessionLocal()
@@ -34,10 +34,10 @@ def init_rds_db():
     try:
         # Verificar si ya existen datos
         if db.query(models.Usuario).first():
-            print("⚠️  La base de datos ya tiene datos. Saltando inicialización.")
+            print("La base de datos ya tiene datos. Saltando inicialización.")
             return
         
-        print("👥 Creando equipos...")
+        print("Creando equipos...")
         # Crear equipos A, B, C
         equipos_data = [
             {"nombre": "A", "descripcion": "Equipo A - Tutores de Matemáticas"},
@@ -57,7 +57,7 @@ def init_rds_db():
         for equipo in equipos:
             db.refresh(equipo)
         
-        print("👤 Creando usuarios...")
+        print("Creando usuarios...")
         # Crear usuarios de ejemplo
         usuarios_data = [
             {
@@ -95,7 +95,7 @@ def init_rds_db():
         for usuario in usuarios:
             db.refresh(usuario)
         
-        print("👨‍🏫 Creando tutores...")
+        print("Creando tutores...")
         # Crear tutores de ejemplo
         tutores_data = [
             {
@@ -148,7 +148,7 @@ def init_rds_db():
         for tutor in tutores:
             db.refresh(tutor)
         
-        print("🎓 Creando estudiantes...")
+        print("Creando estudiantes...")
         # Crear estudiantes de ejemplo (5 por equipo)
         estudiantes_data = [
             # Equipo A
@@ -181,18 +181,18 @@ def init_rds_db():
         
         db.commit()
         
-        print("✅ Base de datos inicializada correctamente en AWS RDS!")
+        print("Base de datos inicializada correctamente en AWS RDS!")
         print(f"   - 3 equipos (A, B, C)")
         print(f"   - 3 usuarios (1 admin, 2 tutores)")
         print(f"   - 6 tutores (2 por equipo)")
         print(f"   - 15 estudiantes (5 por equipo)")
-        print("\n🔑 Credenciales de acceso:")
+        print("\nCredenciales de acceso:")
         print("   Admin: admin@tutorias.com / admin123")
         print("   Tutor Equipo A: tutor1@tutorias.com / tutor123")
         print("   Tutor Equipo B: tutor2@tutorias.com / tutor123")
         
     except Exception as e:
-        print(f"❌ Error al inicializar la base de datos: {e}")
+        print(f"Error al inicializar la base de datos: {e}")
         db.rollback()
     finally:
         db.close()
