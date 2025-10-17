@@ -27,5 +27,4 @@ USER app
 EXPOSE 8080
 
 # Comando de inicio
-# Inicializar base de datos si es necesario
-CMD ["sh", "-c", "python recreate_db_with_colegios.py && uvicorn app.main:app --host 0.0.0.0 --port 8080"]
+CMD ["python", "start_app.py"]

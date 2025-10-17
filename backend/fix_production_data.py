@@ -15,7 +15,7 @@ import random
 def fix_production_data():
     """Corregir datos de producción"""
     
-    print("🔧 Corrigiendo datos de producción...")
+    print("Corrigiendo datos de produccion...")
     
     # Crear engine
     engine = create_engine(DATABASE_URL)
@@ -31,20 +31,20 @@ def fix_production_data():
             tables = [row[0] for row in result]
             
             if 'asistencia_estudiantes' not in tables or 'asistencia_tutores' not in tables:
-                print("❌ Las tablas de asistencia no existen. Ejecutando migración...")
+                print("ERROR: Las tablas de asistencia no existen. Ejecutando migracion...")
                 from app import models
                 models.Base.metadata.create_all(bind=engine)
-                print("✅ Tablas de asistencia creadas")
+                print("OK: Tablas de asistencia creadas")
             
             # Obtener estudiantes
             result = conn.execute(text("SELECT id FROM estudiantes;"))
             student_ids = [row[0] for row in result]
-            print(f"📚 Encontrados {len(student_ids)} estudiantes")
+            print(f"Encontrados {len(student_ids)} estudiantes")
             
             # Obtener tutores
             result = conn.execute(text("SELECT id FROM tutores;"))
             tutor_ids = [row[0] for row in result]
-            print(f"👨‍🏫 Encontrados {len(tutor_ids)} tutores")
+            print(f"Encontrados {len(tutor_ids)} tutores")
             
             # Inicializar asistencia para estudiantes
             student_count = 0
@@ -104,12 +104,12 @@ def fix_production_data():
             
             conn.commit()
             
-            print(f"✅ Se crearon {student_count} registros de asistencia para estudiantes")
-            print(f"✅ Se crearon {tutor_count} registros de asistencia para tutores")
-            print("🎉 Datos de producción corregidos exitosamente!")
+            print(f"OK: Se crearon {student_count} registros de asistencia para estudiantes")
+            print(f"OK: Se crearon {tutor_count} registros de asistencia para tutores")
+            print("Datos de produccion corregidos exitosamente!")
             
     except Exception as e:
-        print(f"❌ Error al corregir datos: {e}")
+        print(f"ERROR: Error al corregir datos: {e}")
         return False
     
     return True
