@@ -33,7 +33,7 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
+        const apiUrl = (import.meta as any).env?.VITE_API_URL || 'https://wh7jum5qhe.us-east-1.awsapprunner.com';
         
         // Cargar estudiantes
         const estudiantesResponse = await fetch(`${apiUrl}/estudiantes/`, {

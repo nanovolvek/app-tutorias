@@ -65,7 +65,15 @@ Write-Host "  - Service name: tutorias-backend" -ForegroundColor White
 Write-Host "📋 Variables de entorno para App Runner:" -ForegroundColor Yellow
 Write-Host "  DATABASE_URL: postgresql://postgres:tutorias-db-123456789@tutorias-db.cx6xogrsenqa.us-east-1.rds.amazonaws.com:5432/postgres" -ForegroundColor White
 Write-Host "  SECRET_KEY: tutorias-db-123456789" -ForegroundColor White
+Write-Host "  ALGORITHM: HS256" -ForegroundColor White
+Write-Host "  ACCESS_TOKEN_EXPIRE_MINUTES: 30" -ForegroundColor White
 Write-Host "  ALLOWED_ORIGINS: https://main.d1d2p1x4drhejl.amplifyapp.com,http://localhost:5173" -ForegroundColor White
+
+Write-Host "📋 IMPORTANTE: Configurar RDS antes de continuar:" -ForegroundColor Red
+Write-Host "  1. RDS Console -> Databases -> tutorias-db -> Modify" -ForegroundColor White
+Write-Host "  2. Connectivity & security -> Public access: Yes" -ForegroundColor White
+Write-Host "  3. EC2 Console -> Security Groups -> Edit inbound rules" -ForegroundColor White
+Write-Host "  4. Add rule: Type=PostgreSQL, Port=5432, Source=0.0.0.0/0" -ForegroundColor White
 
 Set-Location ..
 

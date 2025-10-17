@@ -52,7 +52,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     try {
-        const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
+        const apiUrl = (import.meta as any).env?.VITE_API_URL || 'https://wh7jum5qhe.us-east-1.awsapprunner.com';
+        console.log('🔍 API URL:', apiUrl);
+        console.log('🔍 Login URL:', `${apiUrl}/auth/login-json`);
       const response = await fetch(`${apiUrl}/auth/login-json`, {
         method: 'POST',
         headers: {
@@ -64,19 +66,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }),
       });
 
+      console.log('🔍 Response status:', response.status);
+      console.log('🔍 Response ok:', response.ok);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('🔍 Login data:', data);
         setToken(data.access_token);
         
         // Obtener información del usuario
+        console.log('🔍 Fetching user data from:', `${apiUrl}/auth/me`);
         const userResponse = await fetch(`${apiUrl}/auth/me`, {
           headers: {
             'Authorization': `Bearer ${data.access_token}`,
           },
         });
         
+        console.log('🔍 User response status:', userResponse.status);
+        console.log('🔍 User response ok:', userResponse.ok);
+        
         if (userResponse.ok) {
           const userData = await userResponse.json();
+          console.log('🔍 User data:', userData);
           setUser(userData);
           localStorage.setItem('token', data.access_token);
           localStorage.setItem('user', JSON.stringify(userData));
@@ -86,10 +97,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           }, 100);
           return true;
         } else {
+          console.log('🔍 User fetch failed');
           setIsLoading(false);
           return false;
         }
       } else {
+        console.log('🔍 Login failed with status:', response.status);
+        const errorText = await response.text();
+        console.log('🔍 Error response:', errorText);
         setIsLoading(false);
         return false;
       }
