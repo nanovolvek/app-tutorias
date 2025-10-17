@@ -17,18 +17,3 @@ frontend:
     paths:
       - node_modules/**/*
       - .npm/**/*
-backend:
-  phases:
-    preBuild:
-      commands:
-        - echo "Instalando dependencias del backend..."
-        - cd backend
-        - pip install -r requirements.txt
-    build:
-      commands:
-        - echo "Construyendo backend..."
-        - echo "Backend build completado"
-  artifacts:
-    baseDirectory: backend
-    files:
-      - '**/*'
