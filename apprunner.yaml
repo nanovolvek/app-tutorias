@@ -4,11 +4,12 @@ build:
   commands:
     build:
       - echo "Instalando dependencias..."
+      - cd backend
       - pip install --upgrade pip
-      - pip install -r backend/requirements.txt
+      - pip install -r requirements.txt
 run:
   runtime-version: 3.8
-  command: uvicorn app.main:app --host 0.0.0.0 --port 8080
+  command: cd backend && uvicorn app.main:app --host 0.0.0.0 --port 8080
   network:
     port: 8080
   env:
