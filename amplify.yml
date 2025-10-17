@@ -1,0 +1,34 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - echo "Instalando dependencias del frontend..."
+        - npm ci
+    build:
+      commands:
+        - echo "Construyendo frontend..."
+        - npm run build
+  artifacts:
+    baseDirectory: dist
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
+      - .npm/**/*
+backend:
+  phases:
+    preBuild:
+      commands:
+        - echo "Instalando dependencias del backend..."
+        - cd backend
+        - pip install -r requirements.txt
+    build:
+      commands:
+        - echo "Construyendo backend..."
+        - echo "Backend build completado"
+  artifacts:
+    baseDirectory: backend
+    files:
+      - '**/*'
