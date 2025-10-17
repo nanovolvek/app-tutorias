@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 from app.database import get_db
-from app.models.attendance import TutorAttendance
+from app.models.attendance import AsistenciaTutor, EstadoAsistencia
 from app.models.tutor import Tutor
-from app.models.school import School
+from app.models.school import Colegio
 from app.schemas.attendance import (
     TutorAttendanceCreate, 
     TutorAttendanceUpdate, 
@@ -22,14 +22,14 @@ def get_tutor_attendance_summary(
 ):
     """Obtiene el resumen de asistencia de todos los tutores con porcentajes"""
     
-    # Obtener todos los tutores con sus colegios
-    tutors = db.query(Tutor).join(School).all()
+    # Obtener todos los tutores con sus equipos y colegios
+    tutors = db.query(Tutor).join(Colegio, Tutor.equipo_id == Colegio.id).all()
     
     summary = []
     
     for tutor in tutors:
         # Obtener registros de asistencia del tutor
-        attendance_records = db.query(TutorAttendance).filter(TutorAttendance.tutor_id == tutor.id).all()
+        attendance_records = db.query(AsistenciaTutor).filter(AsistenciaTutor.tutor_id == tutor.id).all()
         
         # Crear diccionario de asistencia por semana
         weekly_attendance = {}
@@ -42,8 +42,8 @@ def get_tutor_attendance_summary(
         
         # Marcar las semanas donde el tutor asistió
         for record in attendance_records:
-            weekly_attendance[record.week] = record.status.value
-            if record.status == AttendanceStatus.ATTENDED:
+            weekly_attendance[record.semana] = record.estado.value
+            if record.estado == EstadoAsistencia.ASISTIO:
                 attended_weeks += 1
         
         # Calcular porcentaje de asistencia
@@ -52,8 +52,8 @@ def get_tutor_attendance_summary(
         
         summary.append(TutorAttendanceSummary(
             tutor_id=tutor.id,
-            tutor_name=f"{tutor.first_name} {tutor.last_name}",
-            school_name=tutor.school.name,
+            tutor_name=f"{tutor.nombre} {tutor.apellido}",
+            school_name=tutor.equipo.colegio.nombre if tutor.equipo and tutor.equipo.colegio else "Sin colegio",
             total_weeks=total_weeks,
             attended_weeks=attended_weeks,
             attendance_percentage=round(attendance_percentage, 2),
@@ -76,20 +76,24 @@ def create_tutor_attendance_record(
         raise HTTPException(status_code=404, detail="Tutor no encontrado")
     
     # Verificar si ya existe un registro para esta semana
-    existing_record = db.query(TutorAttendance).filter(
-        TutorAttendance.tutor_id == attendance.tutor_id,
-        TutorAttendance.week == attendance.week
+    existing_record = db.query(AsistenciaTutor).filter(
+        AsistenciaTutor.tutor_id == attendance.tutor_id,
+        AsistenciaTutor.semana == attendance.week
     ).first()
     
     if existing_record:
         # Actualizar registro existente
-        existing_record.status = attendance.status
+        existing_record.estado = EstadoAsistencia(attendance.status)
         db.commit()
         db.refresh(existing_record)
         return existing_record
     else:
         # Crear nuevo registro
-        db_attendance = TutorAttendance(**attendance.dict())
+        db_attendance = AsistenciaTutor(
+            tutor_id=attendance.tutor_id,
+            semana=attendance.week,
+            estado=EstadoAsistencia(attendance.status)
+        )
         db.add(db_attendance)
         db.commit()
         db.refresh(db_attendance)
@@ -104,12 +108,12 @@ def update_tutor_attendance_record(
 ):
     """Actualizar un registro de asistencia de tutor existente"""
     
-    attendance = db.query(TutorAttendance).filter(TutorAttendance.id == attendance_id).first()
+    attendance = db.query(AsistenciaTutor).filter(AsistenciaTutor.id == attendance_id).first()
     if not attendance:
         raise HTTPException(status_code=404, detail="Registro de asistencia no encontrado")
     
     if attendance_update.status is not None:
-        attendance.status = attendance_update.status
+        attendance.estado = EstadoAsistencia(attendance_update.status)
     
     db.commit()
     db.refresh(attendance)
@@ -134,16 +138,16 @@ def initialize_tutor_attendance(
         week_key = f"semana_{week_num}"
         
         # Verificar si ya existe un registro para esta semana
-        existing = db.query(TutorAttendance).filter(
-            TutorAttendance.tutor_id == tutor_id,
-            TutorAttendance.week == week_key
+        existing = db.query(AsistenciaTutor).filter(
+            AsistenciaTutor.tutor_id == tutor_id,
+            AsistenciaTutor.semana == week_key
         ).first()
         
         if not existing:
-            attendance_record = TutorAttendance(
+            attendance_record = AsistenciaTutor(
                 tutor_id=tutor_id,
-                week=week_key,
-                status=AttendanceStatus.NOT_ATTENDED  # Por defecto no asistió
+                semana=week_key,
+                estado=EstadoAsistencia.NO_ASISTIO  # Por defecto no asistió
             )
             db.add(attendance_record)
             created_records.append(attendance_record)

@@ -139,12 +139,64 @@ def recreate_db_with_colegios():
             
             db.commit()
             
+            print("Inicializando datos de asistencia...")
+            # Inicializar datos de asistencia
+            from app.models.attendance import AsistenciaEstudiante, AsistenciaTutor, EstadoAsistencia
+            import random
+            
+            # Crear datos de asistencia para estudiantes
+            for estudiante in estudiantes_data:
+                estudiante_obj = db.query(models.Estudiante).filter(
+                    models.Estudiante.rut == estudiante["rut"]
+                ).first()
+                if estudiante_obj:
+                    for week_num in range(1, 11):
+                        week_key = f"semana_{week_num}"
+                        # 70% de probabilidad de asistir
+                        status = EstadoAsistencia.ASISTIO if random.random() < 0.7 else random.choice([
+                            EstadoAsistencia.NO_ASISTIO, 
+                            EstadoAsistencia.SUSPENDIDA, 
+                            EstadoAsistencia.VACACIONES
+                        ])
+                        
+                        attendance_record = AsistenciaEstudiante(
+                            estudiante_id=estudiante_obj.id,
+                            semana=week_key,
+                            estado=status
+                        )
+                        db.add(attendance_record)
+            
+            # Crear datos de asistencia para tutores
+            for tutor in tutores_data:
+                tutor_obj = db.query(models.Tutor).filter(
+                    models.Tutor.email == tutor["email"]
+                ).first()
+                if tutor_obj:
+                    for week_num in range(1, 11):
+                        week_key = f"semana_{week_num}"
+                        # 80% de probabilidad de asistir (tutores más responsables)
+                        status = EstadoAsistencia.ASISTIO if random.random() < 0.8 else random.choice([
+                            EstadoAsistencia.NO_ASISTIO, 
+                            EstadoAsistencia.SUSPENDIDA, 
+                            EstadoAsistencia.VACACIONES
+                        ])
+                        
+                        attendance_record = AsistenciaTutor(
+                            tutor_id=tutor_obj.id,
+                            semana=week_key,
+                            estado=status
+                        )
+                        db.add(attendance_record)
+            
+            db.commit()
+            
             print("Base de datos recreada correctamente!")
             print(f"   - 3 colegios")
             print(f"   - 3 equipos (A, B, C) con colegios asignados")
             print(f"   - 3 usuarios (1 admin, 2 tutores)")
             print(f"   - 6 tutores (2 por equipo)")
             print(f"   - 15 estudiantes (5 por equipo)")
+            print(f"   - Datos de asistencia para 10 semanas")
             print("\nCredenciales de acceso:")
             print("   Admin: admin@tutorias.com / admin123")
             print("   Tutor Equipo A: tutor1@tutorias.com / tutor123")

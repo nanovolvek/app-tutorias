@@ -9,6 +9,8 @@ frontend:
     build:
       commands:
         - echo "Construyendo frontend..."
+        - echo "Configurando variables de entorno..."
+        - echo "VITE_API_URL=$VITE_API_URL" > .env.production
         - npm run build
   artifacts:
     baseDirectory: dist

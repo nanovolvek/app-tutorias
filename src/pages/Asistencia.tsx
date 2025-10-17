@@ -38,7 +38,8 @@ const Asistencia: React.FC = () => {
 
   const fetchStudents = async () => {
     try {
-      const response = await fetch('http://localhost:8000/estudiantes/', {
+      const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${apiUrl}/estudiantes/`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -55,7 +56,8 @@ const Asistencia: React.FC = () => {
 
   const fetchTutors = async () => {
     try {
-      const response = await fetch('http://localhost:8000/tutores/', {
+      const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${apiUrl}/tutores/`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -76,9 +78,10 @@ const Asistencia: React.FC = () => {
     setMessage('');
 
     try {
+      const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
       const url = activeTab === 'students' 
-        ? 'http://localhost:8000/attendance/student'
-        : 'http://localhost:8000/tutor-attendance/';
+        ? `${apiUrl}/attendance/student`
+        : `${apiUrl}/tutor-attendance/`;
       
       const body = activeTab === 'students'
         ? {
