@@ -11,18 +11,14 @@ RUN apt-get update && apt-get install -y \
 # Establecer directorio de trabajo
 WORKDIR /app
 
-# Copiar archivos de dependencias
-COPY backend/requirements.txt .
-COPY frontend/package*.json ./
+# Copiar código fuente primero
+COPY . .
 
 # Instalar dependencias de Python
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r backend/requirements.txt
 
 # Instalar dependencias de Node.js
-RUN npm ci
-
-# Copiar código fuente
-COPY . .
+RUN cd frontend && npm ci
 
 # Construir el frontend
 RUN cd frontend && npm run build
