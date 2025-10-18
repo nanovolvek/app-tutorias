@@ -18,10 +18,6 @@ app = FastAPI(
 )
 
 # Health check endpoint para App Runner
-@app.get("/")
-async def health_check():
-    return {"status": "healthy", "message": "Plataforma Tutorías API is running"}
-
 @app.get("/health")
 async def health():
     return {"status": "healthy", "message": "Plataforma Tutorías API is running"}
@@ -78,10 +74,11 @@ if os.path.exists(frontend_dist_path):
         
         return {"error": "Not found"}
 
+# Ruta raíz para servir el frontend React
 @app.get("/")
-def read_root():
+async def serve_root():
+    frontend_dist_path = "/app/static"
+    index_path = os.path.join(frontend_dist_path, "index.html")
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
     return {"message": "¡Bienvenido a la Plataforma Tutorías API!"}
-
-@app.get("/health")
-def health_check():
-    return {"status": "ok", "message": "API funcionando correctamente"}
