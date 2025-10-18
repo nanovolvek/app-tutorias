@@ -17,17 +17,17 @@ COPY . .
 # Instalar dependencias de Python
 RUN pip install --no-cache-dir -r backend/requirements.txt
 
-# Instalar dependencias de Node.js
-RUN cd frontend && npm ci
+# Instalar dependencias de Node.js (el frontend está en la raíz)
+RUN npm ci
 
-# Construir el frontend
-RUN cd frontend && npm run build
+# Construir el frontend (el frontend está en la raíz)
+RUN npm run build
 
 # Crear directorio para archivos estáticos
 RUN mkdir -p /app/static
 
-# Copiar archivos construidos del frontend
-RUN cp -r frontend/dist/* /app/static/
+# Copiar archivos construidos del frontend (dist está en la raíz)
+RUN cp -r dist/* /app/static/
 
 # Crear usuario no-root para seguridad
 RUN useradd --create-home --shell /bin/bash app \
