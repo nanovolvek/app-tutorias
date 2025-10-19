@@ -35,7 +35,7 @@ target_metadata = Base.metadata
 
 def get_url():
     """Obtiene la URL de la base de datos desde variables de entorno"""
-    return os.getenv("DATABASE_URL", "postgresql://postgres:tu_contraseña@localhost:5432/tutorias_db")
+    return os.getenv("DATABASE_URL", "postgresql://tutorias_db_user:kDL6FlvxRo9urc0X7DHUi86RHi0F2ec2@dpg-d3pr88c9c44c73c9snsg-a.oregon-postgres.render.com/tutorias_db")
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.

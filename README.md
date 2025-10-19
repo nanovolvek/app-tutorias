@@ -10,24 +10,16 @@ Sistema web completo para gestión de tutorías escolares con autenticación, ge
 - **Despliegue**: Render.com (Docker)
 - **Autenticación**: JWT con roles (admin/tutor)
 
-## 🗄️ Bases de Datos
+## 🗄️ Base de Datos
 
-### **Local (Desarrollo)**
-- **Ubicación**: Tu máquina local
-- **Host**: `localhost:5432`
-- **Base de datos**: `tutorias_db`
-- **Usuario**: `postgres`
-- **Contraseña**: `nanopostgres`
-- **Propósito**: Desarrollo y pruebas
-
-### **Producción (Render)**
+### **Configuración Simplificada**
 - **Ubicación**: Render.com (Oregon, US West)
 - **Host**: `dpg-d3pr88c9c44c73c9snsg-a.oregon-postgres.render.com`
 - **Base de datos**: `tutorias_db`
 - **Usuario**: `tutorias_db_user`
-- **Propósito**: Aplicación en vivo
+- **Propósito**: Desarrollo y producción (una sola fuente de verdad)
 
-**⚠️ IMPORTANTE**: Son bases de datos completamente separadas. Los cambios locales NO afectan producción automáticamente.
+**✅ VENTAJA**: Una sola base de datos para desarrollo y producción. Sin sincronización compleja.
 
 ## 🚀 Despliegue en Render.com
 
@@ -44,8 +36,7 @@ Sistema web completo para gestión de tutorías escolares con autenticación, ge
 
 ### **Prerrequisitos**
 - Node.js (v18+)
-- Python (v3.9+)
-- PostgreSQL local
+- Python (v3.9+) - Solo para desarrollo de backend
 - Git
 
 ### **1. Clonar y Configurar**
@@ -54,60 +45,51 @@ git clone https://github.com/nanovolvek/app-tutorias.git
 cd app-tutorias
 ```
 
-### **2. Base de Datos Local**
+### **2. Configuración Simplificada**
 ```bash
-# Conectar a PostgreSQL
-psql -U postgres
-
-# Crear base de datos
-CREATE DATABASE tutorias_db;
-\q
+# El frontend se conecta automáticamente a la API de producción
+# No necesitas configurar base de datos local
+# Los datos siempre están sincronizados
 ```
 
-### **3. Backend**
+### **3. Frontend (Desarrollo Principal)**
+```bash
+# Instalar dependencias
+npm install
+
+# Ejecutar en modo desarrollo
+npm run dev
+
+# El frontend se conecta automáticamente a:
+# https://app-tutorias.onrender.com
+```
+
+### **4. Backend (Opcional - Solo para desarrollo de nuevas features)**
 ```bash
 cd backend
 python -m venv venv
 venv\Scripts\activate  # Windows
-# source venv/bin/activate  # Linux/Mac
 
 pip install -r requirements.txt
 
-# Configurar variables de entorno
-# Crear archivo .env con:
-DATABASE_URL=postgresql://postgres:nanopostgres@localhost:5432/tutorias_db
-SECRET_KEY=tu_clave_secreta_muy_larga_y_segura_aqui_123456789
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-
-# Inicializar base de datos
-python init_db.py
-
-# Ejecutar servidor
+# El backend se conecta automáticamente a la base de datos de producción
 python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-### **4. Frontend**
-```bash
-# En otra terminal
-npm install
-npm run dev
-```
-
 ### **5. Acceder a la Aplicación**
-- **Frontend**: http://localhost:5173
-- **Backend API**: http://localhost:8000
-- **Documentación API**: http://localhost:8000/docs
+- **Frontend Local**: http://localhost:5173 (conectado a producción)
+- **Aplicación Producción**: https://app-tutorias.onrender.com
+- **API Producción**: https://app-tutorias.onrender.com/health
 
-## 🔄 Flujo de Trabajo Recomendado
+## 🔄 Flujo de Trabajo Simplificado
 
 ### **1. Desarrollo Local**
 1. **Hacer cambios** en el código local
-2. **Probar** en http://localhost:5173
-3. **Verificar** que todo funciona correctamente
-4. **Probar** con la base de datos local
+2. **Probar** en http://localhost:5173 (conectado a producción)
+3. **Verificar** que todo funciona con datos reales
+4. **No necesitas** base de datos local
 
-### **2. Sincronizar con Producción**
+### **2. Deploy a Producción**
 1. **Hacer commit** de los cambios:
    ```bash
    git add .
@@ -116,11 +98,7 @@ npm run dev
    ```
 
 2. **Render detecta** el cambio automáticamente y hace deploy
-
-3. **Sincronizar base de datos** (si es necesario):
-   ```bash
-   python migrate_local_to_render_final.py
-   ```
+3. **Los datos** ya están sincronizados (una sola base de datos)
 
 ### **3. Verificar Producción**
 1. **Probar** en https://app-tutorias.onrender.com
