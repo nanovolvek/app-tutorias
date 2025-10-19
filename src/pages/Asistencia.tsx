@@ -121,8 +121,6 @@ const Asistencia: React.FC = () => {
 
   const fetchInitialData = async () => {
     try {
-      const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
-      
       // Usar datos mock del calendario
       setWeeks(mockWeeks);
       
