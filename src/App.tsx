@@ -6,7 +6,6 @@ import Dashboard from './pages/Dashboard';
 import Estudiantes from './pages/Estudiantes';
 import Tutores from './pages/Tutores';
 import Asistencia from './pages/Asistencia';
-import Pruebas from './pages/Pruebas';
 import Tickets from './pages/Tickets';
 import MaterialApoyo from './pages/MaterialApoyo';
 
@@ -57,7 +56,6 @@ function AppContent() {
         <Route path="/estudiantes" element={<Estudiantes />} />
         <Route path="/tutores" element={<Tutores />} />
         <Route path="/asistencia" element={<Asistencia />} />
-        <Route path="/pruebas" element={<Pruebas />} />
         <Route path="/tickets" element={<Tickets />} />
         <Route path="/material-apoyo" element={<MaterialApoyo />} />
       </Routes>

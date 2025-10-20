@@ -19,7 +19,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       { path: '/', label: 'Dashboard', icon: '📊' },
       { path: '/estudiantes', label: 'Estudiantes', icon: '👥' },
       { path: '/asistencia', label: 'Asistencia', icon: '✅' },
-      { path: '/pruebas', label: 'Pruebas', icon: '📝' },
       { path: '/tickets', label: 'Tickets', icon: '🎫' },
       { path: '/material-apoyo', label: 'Material de Apoyo', icon: '📚' },
     ];
