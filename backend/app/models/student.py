@@ -22,3 +22,5 @@ class Estudiante(Base):
     equipo = relationship("Equipo", back_populates="estudiantes")
     # Relación con la tabla asistencia_estudiantes
     asistencia_estudiantes = relationship("AsistenciaEstudiante", back_populates="estudiante")
+    # Relación con la tabla tickets_estudiantes
+    tickets_estudiantes = relationship("TicketEstudiante", back_populates="estudiante")
