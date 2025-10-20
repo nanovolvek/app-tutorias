@@ -9,6 +9,10 @@ export default defineConfig({
     host: true
   },
   define: {
-    'import.meta.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL || 'http://localhost:8000')
+    'import.meta.env.VITE_API_URL': JSON.stringify(
+      process.env.NODE_ENV === 'production' 
+        ? 'https://app-tutorias.onrender.com' 
+        : 'http://localhost:8000'
+    )
   }
 })
