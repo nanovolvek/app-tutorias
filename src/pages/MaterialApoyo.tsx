@@ -72,152 +72,154 @@ const MaterialApoyo: React.FC = () => {
         </div>
       </div>
 
-      <style jsx>{`
-        .material-apoyo-container {
-          max-width: 800px;
-          margin: 0 auto;
-          padding: 2rem;
-        }
-
-        .material-header {
-          text-align: center;
-          margin-bottom: 3rem;
-        }
-
-        .page-title {
-          font-size: 2.5rem;
-          color: #2d3748;
-          margin-bottom: 1rem;
-          font-weight: 700;
-        }
-
-        .page-description {
-          font-size: 1.1rem;
-          color: #718096;
-          line-height: 1.6;
-          max-width: 600px;
-          margin: 0 auto;
-        }
-
-        .drive-access-card {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          border-radius: 20px;
-          padding: 3rem;
-          text-align: center;
-          color: white;
-          margin-bottom: 3rem;
-          box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
-          transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .drive-access-card:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 25px 50px rgba(102, 126, 234, 0.4);
-        }
-
-        .drive-icon {
-          margin-bottom: 1.5rem;
-          display: flex;
-          justify-content: center;
-        }
-
-        .drive-title {
-          font-size: 2rem;
-          margin-bottom: 1rem;
-          font-weight: 600;
-        }
-
-        .drive-description {
-          font-size: 1.1rem;
-          line-height: 1.6;
-          margin-bottom: 2rem;
-          opacity: 0.9;
-        }
-
-        .drive-access-button {
-          background: rgba(255, 255, 255, 0.2);
-          border: 2px solid rgba(255, 255, 255, 0.3);
-          color: white;
-          padding: 1rem 2rem;
-          border-radius: 50px;
-          font-size: 1.1rem;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          display: inline-flex;
-          align-items: center;
-          gap: 0.5rem;
-          backdrop-filter: blur(10px);
-        }
-
-        .drive-access-button:hover {
-          background: rgba(255, 255, 255, 0.3);
-          border-color: rgba(255, 255, 255, 0.5);
-          transform: translateY(-2px);
-        }
-
-        .access-info {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-          gap: 2rem;
-        }
-
-        .info-item {
-          display: flex;
-          align-items: flex-start;
-          gap: 1rem;
-          padding: 1.5rem;
-          background: white;
-          border-radius: 15px;
-          box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-          transition: transform 0.3s ease;
-        }
-
-        .info-item:hover {
-          transform: translateY(-3px);
-        }
-
-        .info-icon {
-          font-size: 2rem;
-          flex-shrink: 0;
-        }
-
-        .info-text h3 {
-          font-size: 1.2rem;
-          color: #2d3748;
-          margin-bottom: 0.5rem;
-          font-weight: 600;
-        }
-
-        .info-text p {
-          color: #718096;
-          line-height: 1.5;
-          margin: 0;
-        }
-
-        @media (max-width: 768px) {
+      <style dangerouslySetInnerHTML={{
+        __html: `
           .material-apoyo-container {
-            padding: 1rem;
-          }
-
-          .page-title {
-            font-size: 2rem;
-          }
-
-          .drive-access-card {
+            max-width: 800px;
+            margin: 0 auto;
             padding: 2rem;
           }
 
+          .material-header {
+            text-align: center;
+            margin-bottom: 3rem;
+          }
+
+          .page-title {
+            font-size: 2.5rem;
+            color: #2d3748;
+            margin-bottom: 1rem;
+            font-weight: 700;
+          }
+
+          .page-description {
+            font-size: 1.1rem;
+            color: #718096;
+            line-height: 1.6;
+            max-width: 600px;
+            margin: 0 auto;
+          }
+
+          .drive-access-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 3rem;
+            text-align: center;
+            color: white;
+            margin-bottom: 3rem;
+            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+          }
+
+          .drive-access-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(102, 126, 234, 0.4);
+          }
+
+          .drive-icon {
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: center;
+          }
+
           .drive-title {
-            font-size: 1.5rem;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+          }
+
+          .drive-description {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+          }
+
+          .drive-access-button {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            backdrop-filter: blur(10px);
+          }
+
+          .drive-access-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
           }
 
           .access-info {
-            grid-template-columns: 1fr;
-            gap: 1rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
           }
-        }
-      `}</style>
+
+          .info-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+          }
+
+          .info-item:hover {
+            transform: translateY(-3px);
+          }
+
+          .info-icon {
+            font-size: 2rem;
+            flex-shrink: 0;
+          }
+
+          .info-text h3 {
+            font-size: 1.2rem;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+          }
+
+          .info-text p {
+            color: #718096;
+            line-height: 1.5;
+            margin: 0;
+          }
+
+          @media (max-width: 768px) {
+            .material-apoyo-container {
+              padding: 1rem;
+            }
+
+            .page-title {
+              font-size: 2rem;
+            }
+
+            .drive-access-card {
+              padding: 2rem;
+            }
+
+            .drive-title {
+              font-size: 1.5rem;
+            }
+
+            .access-info {
+              grid-template-columns: 1fr;
+              gap: 1rem;
+            }
+          }
+        `
+      }} />
     </div>
   );
 };
