@@ -62,6 +62,7 @@ const Asistencia: React.FC = () => {
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [selectedPersonType, setSelectedPersonType] = useState<'estudiante' | 'tutor' | null>(null);
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
+  const [personsData, setPersonsData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [editingWeek, setEditingWeek] = useState<string | null>(null);
   const [editingPerson, setEditingPerson] = useState<number | null>(null);
@@ -74,39 +75,6 @@ const Asistencia: React.FC = () => {
     { key: 'vacaciones/feriado', label: 'Vacaciones/Feriado', color: '#6B7280' }
   ];
 
-  // Datos mock del calendario 2026
-  const mockWeeks: Week[] = [
-    { semana_numero: 1, semana_key: "semana_1", mes: "Marzo", dias: "2 al 8", fecha_inicio: "2026-03-02", fecha_fin: "2026-03-08", mes_numero: 3 },
-    { semana_numero: 2, semana_key: "semana_2", mes: "Marzo", dias: "9 al 15", fecha_inicio: "2026-03-09", fecha_fin: "2026-03-15", mes_numero: 3 },
-    { semana_numero: 3, semana_key: "semana_3", mes: "Marzo", dias: "16 al 22", fecha_inicio: "2026-03-16", fecha_fin: "2026-03-22", mes_numero: 3 },
-    { semana_numero: 4, semana_key: "semana_4", mes: "Marzo", dias: "23 al 29", fecha_inicio: "2026-03-23", fecha_fin: "2026-03-29", mes_numero: 3 },
-    { semana_numero: 5, semana_key: "semana_5", mes: "Marzo", dias: "30 al 5", fecha_inicio: "2026-03-30", fecha_fin: "2026-04-05", mes_numero: 3 },
-    { semana_numero: 6, semana_key: "semana_6", mes: "Abril", dias: "6 al 12", fecha_inicio: "2026-04-06", fecha_fin: "2026-04-12", mes_numero: 4 },
-    { semana_numero: 7, semana_key: "semana_7", mes: "Abril", dias: "13 al 19", fecha_inicio: "2026-04-13", fecha_fin: "2026-04-19", mes_numero: 4 },
-    { semana_numero: 8, semana_key: "semana_8", mes: "Abril", dias: "20 al 26", fecha_inicio: "2026-04-20", fecha_fin: "2026-04-26", mes_numero: 4 },
-    { semana_numero: 9, semana_key: "semana_9", mes: "Abril", dias: "27 al 3", fecha_inicio: "2026-04-27", fecha_fin: "2026-05-03", mes_numero: 4 },
-    { semana_numero: 10, semana_key: "semana_10", mes: "Mayo", dias: "4 al 10", fecha_inicio: "2026-05-04", fecha_fin: "2026-05-10", mes_numero: 5 },
-    { semana_numero: 11, semana_key: "semana_11", mes: "Mayo", dias: "11 al 17", fecha_inicio: "2026-05-11", fecha_fin: "2026-05-17", mes_numero: 5 },
-    { semana_numero: 12, semana_key: "semana_12", mes: "Mayo", dias: "18 al 24", fecha_inicio: "2026-05-18", fecha_fin: "2026-05-24", mes_numero: 5 },
-    { semana_numero: 13, semana_key: "semana_13", mes: "Mayo", dias: "25 al 31", fecha_inicio: "2026-05-25", fecha_fin: "2026-05-31", mes_numero: 5 },
-    { semana_numero: 14, semana_key: "semana_14", mes: "Junio", dias: "1 al 7", fecha_inicio: "2026-06-01", fecha_fin: "2026-06-07", mes_numero: 6 },
-    { semana_numero: 15, semana_key: "semana_15", mes: "Junio", dias: "8 al 14", fecha_inicio: "2026-06-08", fecha_fin: "2026-06-14", mes_numero: 6 },
-    { semana_numero: 16, semana_key: "semana_16", mes: "Junio", dias: "15 al 21", fecha_inicio: "2026-06-15", fecha_fin: "2026-06-21", mes_numero: 6 },
-    { semana_numero: 17, semana_key: "semana_17", mes: "Junio", dias: "22 al 28", fecha_inicio: "2026-06-22", fecha_fin: "2026-06-28", mes_numero: 6 },
-    { semana_numero: 18, semana_key: "semana_18", mes: "Julio", dias: "29 al 5", fecha_inicio: "2026-06-29", fecha_fin: "2026-07-05", mes_numero: 6 },
-    { semana_numero: 19, semana_key: "semana_19", mes: "Julio", dias: "6 al 12", fecha_inicio: "2026-07-06", fecha_fin: "2026-07-12", mes_numero: 7 },
-    { semana_numero: 20, semana_key: "semana_20", mes: "Julio", dias: "13 al 19", fecha_inicio: "2026-07-13", fecha_fin: "2026-07-19", mes_numero: 7 }
-  ];
-
-  // Datos mock de asistencia
-  const mockAttendanceRecords: AttendanceRecord[] = [
-    { id: 1, semana: "semana_1", mes: "Marzo", dias: "2 al 8", estado: "asistió" },
-    { id: 2, semana: "semana_2", mes: "Marzo", dias: "9 al 15", estado: "no asistió" },
-    { id: 3, semana: "semana_3", mes: "Marzo", dias: "16 al 22", estado: "tutoría suspendida" },
-    { id: 4, semana: "semana_4", mes: "Marzo", dias: "23 al 29", estado: "asistió" },
-    { id: 5, semana: "semana_5", mes: "Marzo", dias: "30 al 5", estado: "vacaciones/feriado" }
-  ];
-
   useEffect(() => {
     if (token) {
       fetchInitialData();
@@ -114,15 +82,15 @@ const Asistencia: React.FC = () => {
   }, [token, user]);
 
   useEffect(() => {
-    if (selectedStudent || selectedTutor) {
+    if (selectedPersonType && selectedMonth) {
       fetchAttendanceRecords();
     }
-  }, [selectedStudent, selectedTutor, token]);
+  }, [selectedPersonType, selectedMonth, selectedEquipo, token]);
 
   const fetchInitialData = async () => {
     try {
-      // Usar datos mock del calendario
-      setWeeks(mockWeeks);
+      // Cargar calendario desde API
+      await fetchCalendar();
       
       // Cargar estudiantes y tutores reales
       const promises = [
@@ -132,7 +100,7 @@ const Asistencia: React.FC = () => {
 
       if (user?.rol === 'admin') {
         promises.push(
-          fetchSchools().catch(() => setSchools([]))
+          fetchEquipos().catch(() => setEquipos([]))
         );
       }
 
@@ -143,13 +111,44 @@ const Asistencia: React.FC = () => {
       setTutors([]);
       setSchools([]);
       setEquipos([]);
-      setWeeks(mockWeeks); // Mantener calendario mock
+      setWeeks([]);
       setAttendanceRecords([]);
+    }
+  };
+
+  const fetchCalendar = async () => {
+    const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
+    console.log('🔍 Fetching calendar from:', apiUrl);
+    
+    const response = await fetch(`${apiUrl}/attendance-2026/calendar/weeks`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    console.log('📅 Calendar response status:', response.status);
+    
+    if (response.ok) {
+      const data = await response.json();
+      console.log('📅 Calendar data received:', data);
+      if (data.weeks && Array.isArray(data.weeks)) {
+        setWeeks(data.weeks);
+        console.log('✅ Calendar weeks set:', data.weeks.length);
+      } else {
+        setWeeks(mockWeeks); // Fallback a datos mock
+        console.log('⚠️ Using mock weeks fallback');
+      }
+    } else {
+      console.error('❌ Error fetching calendar:', response.status);
+      setWeeks(mockWeeks); // Fallback a datos mock
     }
   };
 
   const fetchStudents = async () => {
     const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
+    console.log('👥 Fetching students from:', apiUrl);
+    
     const response = await fetch(`${apiUrl}/estudiantes/`, {
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -157,13 +156,18 @@ const Asistencia: React.FC = () => {
       }
     });
     
+    console.log('👥 Students response status:', response.status);
+    
     if (response.ok) {
       const data = await response.json();
+      console.log('👥 Students data received:', data.length, 'students');
       if (Array.isArray(data)) {
         setStudents(data);
       } else {
         setStudents([]);
       }
+    } else {
+      console.error('❌ Error fetching students:', response.status);
     }
   };
 
@@ -186,71 +190,157 @@ const Asistencia: React.FC = () => {
     }
   };
 
-  const fetchSchools = async () => {
+  const fetchEquipos = async () => {
     const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
-    const response = await fetch(`${apiUrl}/schools/`, {
+    console.log('👥 Fetching equipos from:', apiUrl);
+    
+    const response = await fetch(`${apiUrl}/attendance-2026/equipos`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       }
     });
     
+    console.log('👥 Equipos response status:', response.status);
+    
     if (response.ok) {
       const data = await response.json();
+      console.log('👥 Equipos data received:', data.length, 'equipos');
       if (Array.isArray(data)) {
-        setSchools(data);
+        setEquipos(data);
       } else {
-        setSchools([]);
+        setEquipos([]);
       }
+    } else {
+      console.error('❌ Error fetching equipos:', response.status);
     }
   };
 
   const fetchAttendanceRecords = async () => {
-    if (!selectedStudent && !selectedTutor) return;
+    if (!selectedPersonType || !selectedMonth) return;
     
     setLoading(true);
     try {
-      // Simular carga de datos de asistencia
-      setTimeout(() => {
-        setAttendanceRecords(mockAttendanceRecords);
-        setLoading(false);
-      }, 500);
+      const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
+      const personType = selectedPersonType === 'estudiante' ? 'students' : 'tutors';
+      
+      // Construir URL con parámetros
+      const params = new URLSearchParams();
+      params.append('month', selectedMonth);
+      if (selectedEquipo) params.append('equipo_id', selectedEquipo.toString());
+      
+      const url = `${apiUrl}/attendance-2026/${personType}?${params.toString()}`;
+      console.log('📊 Fetching attendance from:', url);
+      
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      console.log('📊 Attendance response status:', response.status);
+      
+      if (response.ok) {
+        const data = await response.json();
+        const persons = personType === 'students' ? data.students : data.tutors;
+        console.log('📊 Attendance data received:', persons.length, 'persons');
+        
+        // Convertir datos de la API al formato esperado por el frontend
+        const records: AttendanceRecord[] = [];
+        persons.forEach((person: any) => {
+          console.log('👤 Processing person:', person.nombre, person.apellido, 'Colegio:', person.colegio_nombre);
+          Object.entries(person.weekly_attendance).forEach(([week, status]) => {
+            const weekData = weeks.find(w => w.semana_key === week);
+            if (weekData) {
+              records.push({
+                id: person.id,
+                semana: week,
+                mes: weekData.mes,
+                dias: weekData.dias,
+                estado: status as string
+              });
+            }
+          });
+        });
+        
+        console.log('📊 Processed records:', records.length);
+        setAttendanceRecords(records);
+        setPersonsData(persons); // Guardar datos de las personas
+      } else {
+        console.error('❌ Error fetching attendance records:', response.status);
+        setAttendanceRecords([]);
+        setPersonsData([]);
+      }
     } catch (error) {
-      console.error('Error fetching attendance records:', error);
+      console.error('❌ Error fetching attendance records:', error);
       setAttendanceRecords([]);
+      setPersonsData([]);
+    } finally {
       setLoading(false);
     }
   };
 
   const updateAttendanceStatus = async (weekKey: string, estado: string | null, personId: number) => {
     try {
-      // Simular actualización de asistencia
-      const week = weeks.find(w => w.semana_key === weekKey);
+      const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
+      const personType = selectedPersonType === 'estudiante' ? 'students' : 'tutors';
       
-      if (!week) return;
+      if (estado === null) {
+        // Si se quiere limpiar el estado, no hacer nada por ahora
+        // En el futuro se podría implementar un endpoint DELETE
+        console.log(`Limpiando estado para ${personType} ${personId} en ${weekKey}`);
+        return;
+      }
       
-      // Actualizar el estado local (simulado)
-      setAttendanceRecords(prev => {
-        const existing = prev.find(r => r.semana === weekKey && r.id === personId);
-        if (existing) {
-          return prev.map(r => 
-            r.semana === weekKey && r.id === personId ? { ...r, estado } : r
-          );
-        } else {
-          return [...prev, {
-            id: personId,
-            semana: weekKey,
-            mes: week.mes,
-            dias: week.dias,
-            estado
-          }];
-        }
+      const response = await fetch(`${apiUrl}/attendance-2026/${personType}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          student_id: personType === 'students' ? personId : undefined,
+          tutor_id: personType === 'tutors' ? personId : undefined,
+          week_key: weekKey,
+          status: estado
+        })
       });
       
-      console.log(`📝 Asistencia actualizada: ${weekKey} -> ${estado} para persona ${personId}`);
+      if (response.ok) {
+        const data = await response.json();
+        console.log(`✅ Asistencia actualizada:`, data);
+        
+        // Actualizar el estado local
+        setAttendanceRecords(prev => {
+          const existing = prev.find(r => r.semana === weekKey && r.id === personId);
+          if (existing) {
+            return prev.map(r => 
+              r.semana === weekKey && r.id === personId ? { ...r, estado } : r
+            );
+          } else {
+            const week = weeks.find(w => w.semana_key === weekKey);
+            return [...prev, {
+              id: personId,
+              semana: weekKey,
+              mes: week?.mes || '',
+              dias: week?.dias || '',
+              estado
+            }];
+          }
+        });
+      } else {
+        console.error('Error updating attendance:', response.status);
+        const errorData = await response.json();
+        console.error('Error details:', errorData);
+      }
     } catch (error) {
       console.error('Error updating attendance:', error);
     }
+  };
+
+  const getPersonData = (personId: number): any => {
+    return personsData.find(person => person.id === personId);
   };
 
   const getAttendanceStatus = (weekKey: string, personId: number): string | null => {
@@ -317,8 +407,8 @@ const Asistencia: React.FC = () => {
       
       {/* Información de estado */}
       <div className="status-info">
-        <div className="status-badge mock">🧪 MODO DEMO - Datos simulados</div>
-        <p>Este es el frontend del sistema de asistencia con datos de prueba. Los cambios se guardan localmente.</p>
+        <div className="status-badge real">✅ CONECTADO - Datos reales de la base de datos</div>
+        <p>Este es el sistema de asistencia conectado a la API. Los cambios se guardan en la base de datos.</p>
       </div>
       
       {/* Filtros y Selección */}
@@ -361,19 +451,6 @@ const Asistencia: React.FC = () => {
         {user?.rol === 'admin' && selectedPersonType && (
           <div className="filter-row">
             <div className="filter-group">
-              <label>Colegio:</label>
-              <select 
-                value={selectedSchool || ''} 
-                onChange={(e) => setSelectedSchool(e.target.value ? Number(e.target.value) : null)}
-              >
-                <option value="">Todos los colegios</option>
-                {Array.isArray(schools) && schools.map(school => (
-                  <option key={school.id} value={school.id}>{school.nombre}</option>
-                ))}
-              </select>
-            </div>
-            
-            <div className="filter-group">
               <label>Equipo:</label>
               <select 
                 value={selectedEquipo || ''} 
@@ -381,7 +458,7 @@ const Asistencia: React.FC = () => {
               >
                 <option value="">Todos los equipos</option>
                 {Array.isArray(equipos) && equipos.map(equipo => (
-                  <option key={equipo.id} value={equipo.id}>{equipo.nombre}</option>
+                  <option key={equipo.id} value={equipo.id}>{equipo.nombre} - {equipo.colegio_nombre}</option>
                 ))}
               </select>
             </div>
@@ -406,6 +483,7 @@ const Asistencia: React.FC = () => {
                     <th className="person-header">
                       {selectedPersonType === 'estudiante' ? 'Estudiante' : 'Tutor'}
                     </th>
+                    <th className="school-header">Colegio</th>
                     {getFilteredWeeks().map(week => (
                       <th key={week.semana_key} className="week-header">
                         <div className="week-info">
@@ -417,13 +495,20 @@ const Asistencia: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {getFilteredPersons().map(person => (
-                    <tr key={person.id}>
-                      <td className="person-cell">
-                        <span className="person-name">
-                          {person.nombre} {person.apellido}
-                        </span>
-                      </td>
+                  {getFilteredPersons().map(person => {
+                    const personData = getPersonData(person.id);
+                    return (
+                      <tr key={person.id}>
+                        <td className="person-cell">
+                          <span className="person-name">
+                            {person.nombre} {person.apellido}
+                          </span>
+                        </td>
+                        <td className="school-cell">
+                          <span className="school-name">
+                            {personData?.colegio_nombre || 'Sin colegio'}
+                          </span>
+                        </td>
                       {getFilteredWeeks().map(week => {
                         const currentStatus = getAttendanceStatus(week.semana_key, person.id);
                         const isEditing = editingWeek === week.semana_key && editingPerson === person.id;
@@ -491,8 +576,9 @@ const Asistencia: React.FC = () => {
                           </td>
                         );
                       })}
-                    </tr>
-                  ))}
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -517,7 +603,7 @@ const Asistencia: React.FC = () => {
               <li><strong>Paso 3:</strong> Se mostrará la lista de personas con sus semanas de asistencia</li>
             )}
             <li>Haz clic en cualquier celda de asistencia para cambiar el estado</li>
-            <li>Los datos se guardan localmente (modo demo)</li>
+            <li>Los datos se guardan en la base de datos en tiempo real</li>
           </ul>
         </div>
       )}

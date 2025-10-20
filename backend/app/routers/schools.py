@@ -2,10 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 from app.database import get_db
-from app.models.school import School
+from app.models.school import Colegio as School
 from app.schemas.school import School as SchoolSchema, SchoolCreate, SchoolUpdate
 from app.auth.dependencies import get_current_active_user, get_admin_user
-from app.models.user import User
+from app.models.user import Usuario as User
 
 router = APIRouter(prefix="/schools", tags=["colegios"])
 

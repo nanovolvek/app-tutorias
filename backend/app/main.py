@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from app.routers import auth_router, equipos_router, tutores_router, estudiantes_router, usuarios_router, attendance, tutor_attendance
+from app.routers import auth_router, equipos_router, tutores_router, estudiantes_router, usuarios_router, attendance, tutor_attendance, attendance_2026
 from app.database import engine, ALLOWED_ORIGINS
 from app import models
 import os
@@ -39,6 +39,7 @@ app.include_router(estudiantes_router)
 app.include_router(usuarios_router)
 app.include_router(attendance.router)
 app.include_router(tutor_attendance.router)
+app.include_router(attendance_2026.router)
 
 # Montar archivos estáticos del frontend
 frontend_dist_path = "/app/static"
