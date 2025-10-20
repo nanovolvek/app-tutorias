@@ -28,14 +28,10 @@ interface Tutor {
   equipo_id: number;
 }
 
-interface School {
-  id: number;
-  nombre: string;
-}
-
 interface Equipo {
   id: number;
   nombre: string;
+  colegio_nombre?: string;
 }
 
 interface AttendanceRecord {
@@ -53,11 +49,7 @@ const Asistencia: React.FC = () => {
   const [weeks, setWeeks] = useState<Week[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [tutors, setTutors] = useState<Tutor[]>([]);
-  const [schools, setSchools] = useState<School[]>([]);
   const [equipos, setEquipos] = useState<Equipo[]>([]);
-  const [selectedStudent, setSelectedStudent] = useState<number | null>(null);
-  const [selectedTutor, setSelectedTutor] = useState<number | null>(null);
-  const [selectedSchool, setSelectedSchool] = useState<number | null>(null);
   const [selectedEquipo, setSelectedEquipo] = useState<number | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [selectedPersonType, setSelectedPersonType] = useState<'estudiante' | 'tutor' | null>(null);
@@ -109,7 +101,6 @@ const Asistencia: React.FC = () => {
       console.error('Error fetching initial data:', error);
       setStudents([]);
       setTutors([]);
-      setSchools([]);
       setEquipos([]);
       setWeeks([]);
       setAttendanceRecords([]);
@@ -136,12 +127,12 @@ const Asistencia: React.FC = () => {
         setWeeks(data.weeks);
         console.log('✅ Calendar weeks set:', data.weeks.length);
       } else {
-        setWeeks(mockWeeks); // Fallback a datos mock
+        setWeeks([]); // Fallback a array vacío
         console.log('⚠️ Using mock weeks fallback');
       }
     } else {
       console.error('❌ Error fetching calendar:', response.status);
-      setWeeks(mockWeeks); // Fallback a datos mock
+      setWeeks([]); // Fallback a array vacío
     }
   };
 
@@ -368,7 +359,6 @@ const Asistencia: React.FC = () => {
     
     return students.filter(student => {
       if (user?.rol === 'admin') {
-        if (selectedSchool && student.colegio_id !== selectedSchool) return false;
         if (selectedEquipo && student.equipo_id !== selectedEquipo) return false;
       }
       return true;
@@ -380,7 +370,6 @@ const Asistencia: React.FC = () => {
     
     return tutors.filter(tutor => {
       if (user?.rol === 'admin') {
-        if (selectedSchool && tutor.colegio_id !== selectedSchool) return false;
         if (selectedEquipo && tutor.equipo_id !== selectedEquipo) return false;
       }
       return true;
@@ -423,8 +412,6 @@ const Asistencia: React.FC = () => {
               value={selectedPersonType || ''} 
               onChange={(e) => {
                 setSelectedPersonType(e.target.value as 'estudiante' | 'tutor' | null);
-                setSelectedStudent(null);
-                setSelectedTutor(null);
               }}
             >
               <option value="">Seleccionar tipo...</option>
