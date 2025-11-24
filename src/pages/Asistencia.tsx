@@ -445,6 +445,150 @@ const Asistencia: React.FC = () => {
     return [];
   };
 
+  const handleExportExcel = async () => {
+    try {
+      const XLSX = await import('xlsx');
+      const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
+      
+      // Obtener todos los meses disponibles
+      const allMonths = getUniqueMonths();
+      
+      // Obtener datos de estudiantes con asistencia de todos los meses (sin filtros)
+      const studentsData: any[] = [];
+      for (const month of allMonths) {
+        const params = new URLSearchParams();
+        params.append('month', month);
+        // No aplicar ningún filtro - exportar todos los datos
+        
+        const response = await fetch(`${apiUrl}/attendance-2026/students?${params.toString()}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          studentsData.push(...data.students);
+        }
+      }
+      
+      // Obtener datos de tutores con asistencia de todos los meses (sin filtros)
+      const tutorsData: any[] = [];
+      for (const month of allMonths) {
+        const params = new URLSearchParams();
+        params.append('month', month);
+        // No aplicar ningún filtro - exportar todos los datos
+        
+        const response = await fetch(`${apiUrl}/attendance-2026/tutors?${params.toString()}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          tutorsData.push(...data.tutors);
+        }
+      }
+      
+      // Obtener información completa de estudiantes (con RUT, curso, etc.)
+      const studentsResponse = await fetch(`${apiUrl}/estudiantes/`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      const allStudents = studentsResponse.ok ? await studentsResponse.json() : [];
+      
+      // Obtener información completa de tutores (con email, etc.)
+      const tutorsResponse = await fetch(`${apiUrl}/tutores/`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      const allTutors = tutorsResponse.ok ? await tutorsResponse.json() : [];
+      
+      // Preparar datos de estudiantes para Excel
+      const studentsExcelData: any[] = [
+        ['RUT', 'Nombre', 'Apellido', 'Curso', 'Equipo', 'Colegio', 'Mes', 'Semana', 'Días', 'Estado']
+      ];
+      
+      // Crear un mapa de estudiantes por ID para acceso rápido
+      const studentsMap = new Map(allStudents.map((s: any) => [s.id, s]));
+      
+      studentsData.forEach((student: any) => {
+        const studentInfo = studentsMap.get(student.id);
+        Object.entries(student.weekly_attendance).forEach(([weekKey, status]) => {
+          const week = weeks.find(w => w.semana_key === weekKey);
+          if (week) {
+            studentsExcelData.push([
+              studentInfo?.rut || 'N/A',
+              student.nombre,
+              student.apellido,
+              studentInfo?.curso || 'N/A',
+              student.equipo_nombre || 'Sin equipo',
+              student.colegio_nombre || 'Sin colegio',
+              week.mes,
+              `S${week.semana_numero}`,
+              week.dias,
+              status as string
+            ]);
+          }
+        });
+      });
+      
+      // Preparar datos de tutores para Excel
+      const tutorsExcelData: any[] = [
+        ['Nombre', 'Apellido', 'Email', 'Equipo', 'Colegio', 'Mes', 'Semana', 'Días', 'Estado']
+      ];
+      
+      // Crear un mapa de tutores por ID para acceso rápido
+      const tutorsMap = new Map(allTutors.map((t: any) => [t.id, t]));
+      
+      tutorsData.forEach((tutor: any) => {
+        const tutorInfo = tutorsMap.get(tutor.id);
+        Object.entries(tutor.weekly_attendance).forEach(([weekKey, status]) => {
+          const week = weeks.find(w => w.semana_key === weekKey);
+          if (week) {
+            tutorsExcelData.push([
+              tutor.nombre,
+              tutor.apellido,
+              tutorInfo?.email || tutor.email || 'N/A',
+              tutor.equipo_nombre || 'Sin equipo',
+              tutor.colegio_nombre || 'Sin colegio',
+              week.mes,
+              `S${week.semana_numero}`,
+              week.dias,
+              status as string
+            ]);
+          }
+        });
+      });
+      
+      // Crear libro de Excel con dos hojas
+      const wb = XLSX.utils.book_new();
+      
+      // Hoja 1: Asistencia de Estudiantes
+      const wsStudents = XLSX.utils.aoa_to_sheet(studentsExcelData);
+      XLSX.utils.book_append_sheet(wb, wsStudents, 'Asistencia Estudiantes');
+      
+      // Hoja 2: Asistencia de Tutores
+      const wsTutors = XLSX.utils.aoa_to_sheet(tutorsExcelData);
+      XLSX.utils.book_append_sheet(wb, wsTutors, 'Asistencia Tutores');
+      
+      // Descargar archivo
+      const fileName = `asistencia_${new Date().toISOString().split('T')[0]}.xlsx`;
+      XLSX.writeFile(wb, fileName);
+      
+    } catch (error) {
+      console.error('Error al exportar Excel:', error);
+      alert('Error al exportar el archivo Excel. Por favor, intenta nuevamente.');
+    }
+  };
+
   if (!token) {
     return <div className="container">Por favor, inicia sesión para acceder a la asistencia.</div>;
   }
@@ -461,7 +605,25 @@ const Asistencia: React.FC = () => {
       
       {/* Filtros y Selección */}
       <div className="filters">
-        <h3>Configuración de Vista</h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <h3 style={{ margin: 0 }}>Configuración de Vista</h3>
+          <button
+            onClick={handleExportExcel}
+            className="btn btn-success"
+            style={{
+              padding: '0.5rem 1rem',
+              backgroundColor: '#10B981',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '0.9rem',
+              fontWeight: '500'
+            }}
+          >
+            📊 Exportar Excel
+          </button>
+        </div>
         
         {/* Selección de tipo de persona */}
         <div className="filter-row">
