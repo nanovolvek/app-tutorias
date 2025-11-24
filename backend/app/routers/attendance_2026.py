@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 from typing import List, Optional
 from app.database import get_db
 from app.models.attendance import AsistenciaEstudiante, AsistenciaTutor, EstadoAsistencia
@@ -311,12 +312,42 @@ def update_student_attendance(
                 print(f"Error en commit/refresh (create): {error_str}")
                 print(f"Estudiante ID: {request.student_id}, Semana: {request.week_key}, Estado: {request.status}, Mes: {mes_value}")
                 
-                # Detectar error de secuencia desincronizada
+                # Detectar error de secuencia desincronizada y resetear automáticamente
                 if "duplicate key" in error_str.lower() or "unique violation" in error_str.lower() or "llave duplicada" in error_str.lower():
-                    raise HTTPException(
-                        status_code=500,
-                        detail="Error: La secuencia de IDs está desincronizada. Ejecuta el script 'reset_sequences.py' en la base de datos de producción."
-                    )
+                    try:
+                        print("[*] Detectado error de secuencia desincronizada. Reseteando automáticamente...")
+                        # Resetear secuencia de asistencia_estudiantes
+                        db.execute(text("""
+                            SELECT setval(
+                                pg_get_serial_sequence('asistencia_estudiantes', 'id'),
+                                COALESCE((SELECT MAX(id) FROM asistencia_estudiantes), 1),
+                                true
+                            );
+                        """))
+                        db.commit()
+                        print("[OK] Secuencia reseteada. Reintentando operación...")
+                        
+                        # Reintentar la operación
+                        db.add(new_record)
+                        db.commit()
+                        db.refresh(new_record)
+                        
+                        return {
+                            "message": "Registro de asistencia creado (secuencia reseteada automáticamente)",
+                            "record": {
+                                "id": new_record.id,
+                                "student_id": new_record.estudiante_id,
+                                "week": new_record.semana,
+                                "status": new_record.estado.value if new_record.estado else None
+                            }
+                        }
+                    except Exception as retry_error:
+                        db.rollback()
+                        print(f"[ERROR] Error al resetear secuencia o reintentar: {str(retry_error)}")
+                        raise HTTPException(
+                            status_code=500,
+                            detail=f"Error al crear registro después de resetear secuencia: {str(retry_error)}"
+                        )
                 
                 raise HTTPException(status_code=500, detail=f"Error al crear registro: {str(commit_error)}")
             
@@ -417,12 +448,42 @@ def update_tutor_attendance(
                 print(f"Error en commit/refresh (create tutor): {error_str}")
                 print(f"Tutor ID: {request.tutor_id}, Semana: {request.week_key}, Estado: {request.status}, Mes: {mes_value}")
                 
-                # Detectar error de secuencia desincronizada
+                # Detectar error de secuencia desincronizada y resetear automáticamente
                 if "duplicate key" in error_str.lower() or "unique violation" in error_str.lower() or "llave duplicada" in error_str.lower():
-                    raise HTTPException(
-                        status_code=500,
-                        detail="Error: La secuencia de IDs está desincronizada. Ejecuta el script 'reset_sequences.py' en la base de datos de producción."
-                    )
+                    try:
+                        print("[*] Detectado error de secuencia desincronizada. Reseteando automáticamente...")
+                        # Resetear secuencia de asistencia_tutores
+                        db.execute(text("""
+                            SELECT setval(
+                                pg_get_serial_sequence('asistencia_tutores', 'id'),
+                                COALESCE((SELECT MAX(id) FROM asistencia_tutores), 1),
+                                true
+                            );
+                        """))
+                        db.commit()
+                        print("[OK] Secuencia reseteada. Reintentando operación...")
+                        
+                        # Reintentar la operación
+                        db.add(new_record)
+                        db.commit()
+                        db.refresh(new_record)
+                        
+                        return {
+                            "message": "Registro de asistencia creado (secuencia reseteada automáticamente)",
+                            "record": {
+                                "id": new_record.id,
+                                "tutor_id": new_record.tutor_id,
+                                "week": new_record.semana,
+                                "status": new_record.estado.value if new_record.estado else None
+                            }
+                        }
+                    except Exception as retry_error:
+                        db.rollback()
+                        print(f"[ERROR] Error al resetear secuencia o reintentar: {str(retry_error)}")
+                        raise HTTPException(
+                            status_code=500,
+                            detail=f"Error al crear registro después de resetear secuencia: {str(retry_error)}"
+                        )
                 
                 raise HTTPException(status_code=500, detail=f"Error al crear registro: {str(commit_error)}")
             
