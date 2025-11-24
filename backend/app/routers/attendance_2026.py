@@ -239,6 +239,10 @@ def update_student_attendance(
 ):
     """Crear o actualizar registro de asistencia de estudiante"""
     
+    # Validar que student_id esté presente
+    if request.student_id is None:
+        raise HTTPException(status_code=400, detail="student_id es requerido")
+    
     # Verificar que el estudiante existe
     student = db.query(Estudiante).filter(Estudiante.id == request.student_id).first()
     if not student:
@@ -297,6 +301,10 @@ def update_tutor_attendance(
     current_user = Depends(get_current_user)
 ):
     """Crear o actualizar registro de asistencia de tutor"""
+    
+    # Validar que tutor_id esté presente
+    if request.tutor_id is None:
+        raise HTTPException(status_code=400, detail="tutor_id es requerido")
     
     # Verificar que el tutor existe
     tutor = db.query(Tutor).filter(Tutor.id == request.tutor_id).first()

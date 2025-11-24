@@ -322,18 +322,25 @@ const Asistencia: React.FC = () => {
       }
       
       // Crear o actualizar registro de asistencia
+      // Construir el body solo con los campos necesarios (sin undefined)
+      const requestBody: any = {
+        week_key: weekKey,
+        status: estado
+      };
+      
+      if (personType === 'students') {
+        requestBody.student_id = personId;
+      } else {
+        requestBody.tutor_id = personId;
+      }
+      
       const response = await fetch(`${apiUrl}/attendance-2026/${personType}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          student_id: personType === 'students' ? personId : undefined,
-          tutor_id: personType === 'tutors' ? personId : undefined,
-          week_key: weekKey,
-          status: estado
-        })
+        body: JSON.stringify(requestBody)
       });
       
       if (response.ok) {
