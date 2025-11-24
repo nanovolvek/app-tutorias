@@ -348,3 +348,55 @@ def update_tutor_attendance(
                 "status": new_record.estado.value
             }
         }
+
+@router.delete("/students")
+def delete_student_attendance(
+    student_id: int = Query(..., description="ID del estudiante"),
+    week_key: str = Query(..., description="Clave de la semana"),
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """Eliminar registro de asistencia de estudiante"""
+    # Verificar que el estudiante existe
+    student = db.query(Estudiante).filter(Estudiante.id == student_id).first()
+    if not student:
+        raise HTTPException(status_code=404, detail="Estudiante no encontrado")
+    
+    # Buscar registro existente
+    record = db.query(AsistenciaEstudiante).filter(
+        AsistenciaEstudiante.estudiante_id == student_id,
+        AsistenciaEstudiante.semana == week_key
+    ).first()
+    
+    if record:
+        db.delete(record)
+        db.commit()
+        return {"message": "Registro de asistencia eliminado"}
+    else:
+        raise HTTPException(status_code=404, detail="Registro no encontrado")
+
+@router.delete("/tutors")
+def delete_tutor_attendance(
+    tutor_id: int = Query(..., description="ID del tutor"),
+    week_key: str = Query(..., description="Clave de la semana"),
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """Eliminar registro de asistencia de tutor"""
+    # Verificar que el tutor existe
+    tutor = db.query(Tutor).filter(Tutor.id == tutor_id).first()
+    if not tutor:
+        raise HTTPException(status_code=404, detail="Tutor no encontrado")
+    
+    # Buscar registro existente
+    record = db.query(AsistenciaTutor).filter(
+        AsistenciaTutor.tutor_id == tutor_id,
+        AsistenciaTutor.semana == week_key
+    ).first()
+    
+    if record:
+        db.delete(record)
+        db.commit()
+        return {"message": "Registro de asistencia eliminado"}
+    else:
+        raise HTTPException(status_code=404, detail="Registro no encontrado")

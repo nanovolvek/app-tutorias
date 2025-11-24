@@ -278,12 +278,50 @@ const Asistencia: React.FC = () => {
       const personType = selectedPersonType === 'estudiante' ? 'students' : 'tutors';
       
       if (estado === null) {
-        // Si se quiere limpiar el estado, no hacer nada por ahora
-        // En el futuro se podría implementar un endpoint DELETE
-        console.log(`Limpiando estado para ${personType} ${personId} en ${weekKey}`);
+        // Eliminar registro de asistencia usando DELETE
+        const params = new URLSearchParams();
+        if (personType === 'students') {
+          params.append('student_id', personId.toString());
+        } else {
+          params.append('tutor_id', personId.toString());
+        }
+        params.append('week_key', weekKey);
+        
+        const response = await fetch(`${apiUrl}/attendance-2026/${personType}?${params.toString()}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log(`✅ Registro de asistencia eliminado:`, data);
+          
+          // Eliminar el registro del estado local
+          setAttendanceRecords(prev => 
+            prev.filter(r => !(r.semana === weekKey && r.id === personId))
+          );
+          
+          // Actualizar los datos de las personas para reflejar el cambio
+          setPersonsData(prev => prev.map(person => {
+            if (person.id === personId) {
+              const updatedWeeklyAttendance = { ...person.weekly_attendance };
+              delete updatedWeeklyAttendance[weekKey];
+              return { ...person, weekly_attendance: updatedWeeklyAttendance };
+            }
+            return person;
+          }));
+        } else {
+          console.error('Error deleting attendance:', response.status);
+          const errorData = await response.json().catch(() => ({}));
+          console.error('Error details:', errorData);
+        }
         return;
       }
       
+      // Crear o actualizar registro de asistencia
       const response = await fetch(`${apiUrl}/attendance-2026/${personType}`, {
         method: 'POST',
         headers: {
@@ -320,6 +358,20 @@ const Asistencia: React.FC = () => {
             }];
           }
         });
+        
+        // Actualizar los datos de las personas
+        setPersonsData(prev => prev.map(person => {
+          if (person.id === personId) {
+            return {
+              ...person,
+              weekly_attendance: {
+                ...person.weekly_attendance,
+                [weekKey]: estado
+              }
+            };
+          }
+          return person;
+        }));
       } else {
         console.error('Error updating attendance:', response.status);
         const errorData = await response.json();
@@ -527,7 +579,7 @@ const Asistencia: React.FC = () => {
                                       setEditingPerson(null);
                                     }}
                                   >
-                                    Limpiar
+                                    Sin estado
                                   </button>
                                   <button
                                     className="status-option cancel"
