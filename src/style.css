@@ -278,6 +278,42 @@ ul, ol {
   opacity: 0.9;
 }
 
+/* Selector de vista */
+.view-selector-section {
+  margin: 32px 0 24px 0;
+}
+
+.view-selector {
+  display: flex;
+  gap: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 0;
+}
+
+.view-button {
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #64748b;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: -2px;
+}
+
+.view-button:hover {
+  color: #667eea;
+  background: rgba(102, 126, 234, 0.05);
+}
+
+.view-button.active {
+  color: #667eea;
+  border-bottom-color: #667eea;
+  font-weight: 600;
+}
+
 /* Estilos para tablas de datos */
 .table-container {
   background: white;

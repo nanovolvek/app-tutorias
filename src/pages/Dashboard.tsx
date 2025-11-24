@@ -39,6 +39,15 @@ interface StudentAttendanceData {
   total_weeks: number;
 }
 
+interface TutorAttendanceData {
+  tutor_id: number;
+  tutor_name: string;
+  attendance_percentage: number;
+  attended_weeks: number;
+  absent_weeks: number;
+  total_weeks: number;
+}
+
 interface AttendanceStats {
   students_stats: StudentAttendanceData[];
   overall_average: number;
@@ -51,12 +60,26 @@ interface AttendanceStats {
   total_students: number;
 }
 
+interface TutorAttendanceStats {
+  tutors_stats: TutorAttendanceData[];
+  overall_average: number;
+  tutors_with_3_plus_absences: Array<{
+    tutor_id: number;
+    tutor_name: string;
+    absent_weeks: number;
+  }>;
+  total_tutors: number;
+}
+
 const Dashboard: React.FC = () => {
   const [estudiantes, setEstudiantes] = useState<Estudiante[]>([]);
   const [tutores, setTutores] = useState<Tutor[]>([]);
   const [equipos, setEquipos] = useState<Equipo[]>([]);
   const [attendanceStats, setAttendanceStats] = useState<AttendanceStats | null>(null);
+  const [tutorAttendanceStats, setTutorAttendanceStats] = useState<TutorAttendanceStats | null>(null);
   const [filteredAttendanceStats, setFilteredAttendanceStats] = useState<AttendanceStats | null>(null);
+  const [filteredTutorAttendanceStats, setFilteredTutorAttendanceStats] = useState<TutorAttendanceStats | null>(null);
+  const [selectedView, setSelectedView] = useState<'estudiantes' | 'tutores'>('estudiantes');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const { token, user } = useAuth();
@@ -107,7 +130,7 @@ const Dashboard: React.FC = () => {
           }
         }
 
-        // Cargar estadísticas de asistencia
+        // Cargar estadísticas de asistencia de estudiantes
         const attendanceResponse = await fetch(`${apiUrl}/attendance/students/attendance-stats`, {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -118,6 +141,19 @@ const Dashboard: React.FC = () => {
         if (attendanceResponse.ok) {
           const attendanceData = await attendanceResponse.json();
           setAttendanceStats(attendanceData);
+        }
+
+        // Cargar estadísticas de asistencia de tutores
+        const tutorAttendanceResponse = await fetch(`${apiUrl}/attendance/tutors/attendance-stats`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (tutorAttendanceResponse.ok) {
+          const tutorAttendanceData = await tutorAttendanceResponse.json();
+          setTutorAttendanceStats(tutorAttendanceData);
         }
 
       } catch (err) {
@@ -132,7 +168,7 @@ const Dashboard: React.FC = () => {
     }
   }, [token, user]);
 
-  // Filtrar estadísticas de asistencia por equipo cuando cambien los estudiantes
+  // Filtrar estadísticas de asistencia de estudiantes por equipo cuando cambien los estudiantes
   useEffect(() => {
     if (attendanceStats && estudiantes.length > 0) {
       if (user?.rol === 'tutor' && user?.equipo_id) {
@@ -164,6 +200,39 @@ const Dashboard: React.FC = () => {
       }
     }
   }, [attendanceStats, estudiantes, user]);
+
+  // Filtrar estadísticas de asistencia de tutores por equipo cuando cambien los tutores
+  useEffect(() => {
+    if (tutorAttendanceStats && tutores.length > 0) {
+      if (user?.rol === 'tutor' && user?.equipo_id) {
+        // Filtrar solo los tutores del equipo del tutor
+        const filteredStats = tutorAttendanceStats.tutors_stats.filter((tutorStat: any) => {
+          const tutor = tutores.find(t => t.id === tutorStat.tutor_id);
+          return tutor && tutor.equipo_id === user.equipo_id;
+        });
+        
+        const filteredAbsences = tutorAttendanceStats.tutors_with_3_plus_absences.filter((tutorStat: any) => {
+          const tutor = tutores.find(t => t.id === tutorStat.tutor_id);
+          return tutor && tutor.equipo_id === user.equipo_id;
+        });
+        
+        // Recalcular promedio solo para el equipo
+        const totalAttended = filteredStats.reduce((sum: number, tutorStat: any) => sum + tutorStat.attended_weeks, 0);
+        const totalPossible = filteredStats.reduce((sum: number, tutorStat: any) => sum + tutorStat.total_weeks, 0);
+        const teamAverage = totalPossible > 0 ? (totalAttended / totalPossible) * 100 : 0;
+        
+        setFilteredTutorAttendanceStats({
+          tutors_stats: filteredStats,
+          overall_average: Math.round(teamAverage * 100) / 100,
+          tutors_with_3_plus_absences: filteredAbsences,
+          total_tutors: filteredStats.length
+        });
+      } else {
+        // Si es admin, mostrar todos los datos
+        setFilteredTutorAttendanceStats(tutorAttendanceStats);
+      }
+    }
+  }, [tutorAttendanceStats, tutores, user]);
 
   const getEquipoNombre = (equipoId: number) => {
     const equipo = equipos.find(e => e.id === equipoId);
@@ -222,12 +291,11 @@ const Dashboard: React.FC = () => {
           </div>
 
           {/* Estadísticas de Asistencia - más compactas */}
-          {filteredAttendanceStats && (
-            <>
-              {/* Promedio de Asistencia - 2 cuadritos pequeños */}
-              <div className="attendance-stats-compact">
+          <div className="attendance-stats-compact">
+            {filteredAttendanceStats && (
+              <>
                 <div className="attendance-card-small">
-                  <h3>Promedio % Asistencia</h3>
+                  <h3>Promedio % Asistencia Estudiantes</h3>
                   <p className="stat-number-small">
                     {filteredAttendanceStats.overall_average}%
                   </p>
@@ -243,13 +311,52 @@ const Dashboard: React.FC = () => {
                   </p>
                   <p className="stat-detail-small">requieren atención</p>
                 </div>
+              </>
+            )}
+            
+            {filteredTutorAttendanceStats && (
+              <div className="attendance-card-small">
+                <h3>Promedio % Asistencia Tutores</h3>
+                <p className="stat-number-small">
+                  {filteredTutorAttendanceStats.overall_average}%
+                </p>
+                <p className="stat-detail-small">
+                  {filteredTutorAttendanceStats.total_tutors} tutores
+                </p>
               </div>
+            )}
+          </div>
 
-              {/* Gráfico de Asistencia */}
+          {/* Selector de vista y contenido condicional */}
+          <div className="view-selector-section">
+            <div className="view-selector">
+              <button
+                className={`view-button ${selectedView === 'estudiantes' ? 'active' : ''}`}
+                onClick={() => setSelectedView('estudiantes')}
+              >
+                Estudiantes
+              </button>
+              <button
+                className={`view-button ${selectedView === 'tutores' ? 'active' : ''}`}
+                onClick={() => setSelectedView('tutores')}
+              >
+                Tutores
+              </button>
+            </div>
+          </div>
+
+          {/* Contenido para Estudiantes */}
+          {selectedView === 'estudiantes' && filteredAttendanceStats && (
+            <>
+              {/* Gráfico de Asistencia de Estudiantes */}
               <div className="attendance-chart-section">
                 <h2 className="section-title">Gráfico de Asistencia por Estudiante</h2>
                 <div className="chart-container">
-                  <AttendanceChart data={filteredAttendanceStats.students_stats} />
+                  <AttendanceChart 
+                    data={filteredAttendanceStats.students_stats}
+                    title="Porcentaje de Asistencia por Estudiante"
+                    xAxisLabel="Estudiantes"
+                  />
                 </div>
               </div>
 
@@ -270,70 +377,110 @@ const Dashboard: React.FC = () => {
                   </div>
                 </div>
               )}
+
+              {/* Tabla de estudiantes */}
+              <div className="students-section">
+                <h2 className="section-title">Estudiantes</h2>
+                {estudiantes.length > 0 ? (
+                  <div className="table-container">
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          <th>Nombre</th>
+                          <th>Curso</th>
+                          <th>Equipo</th>
+                          <th>Colegio</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {estudiantes.map((estudiante) => (
+                          <tr key={estudiante.id}>
+                            <td>{estudiante.nombre} {estudiante.apellido}</td>
+                            <td>{estudiante.curso}</td>
+                            <td>{getEquipoNombre(estudiante.equipo_id)}</td>
+                            <td>{getColegioNombre(estudiante.equipo_id)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p>No hay estudiantes disponibles</p>
+                )}
+              </div>
             </>
           )}
 
-          {/* Tabla de estudiantes */}
-          <div className="students-section">
-            <h2 className="section-title">Estudiantes</h2>
-            {estudiantes.length > 0 ? (
-              <div className="table-container">
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>Nombre</th>
-                      <th>Curso</th>
-                      <th>Equipo</th>
-                      <th>Colegio</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {estudiantes.map((estudiante) => (
-                      <tr key={estudiante.id}>
-                        <td>{estudiante.nombre} {estudiante.apellido}</td>
-                        <td>{estudiante.curso}</td>
-                        <td>{getEquipoNombre(estudiante.equipo_id)}</td>
-                        <td>{getColegioNombre(estudiante.equipo_id)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p>No hay estudiantes disponibles</p>
-            )}
-          </div>
-
-          {/* Tabla de tutores (solo para admin) */}
-          {user?.rol === 'admin' && (
-            <div className="tutors-section">
-              <h2 className="section-title">Tutores</h2>
-              {tutores.length > 0 ? (
-                <div className="table-container">
-                  <table className="data-table">
-                    <thead>
-                      <tr>
-                        <th>Nombre</th>
-                        <th>Equipo</th>
-                        <th>Colegio</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {tutores.map((tutor) => (
-                        <tr key={tutor.id}>
-                          <td>{tutor.nombre} {tutor.apellido}</td>
-                          <td>{getEquipoNombre(tutor.equipo_id)}</td>
-                          <td>{getColegioNombre(tutor.equipo_id)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+          {/* Contenido para Tutores */}
+          {selectedView === 'tutores' && filteredTutorAttendanceStats && (
+            <>
+              {/* Gráfico de Asistencia de Tutores */}
+              <div className="attendance-chart-section">
+                <h2 className="section-title">Gráfico de Asistencia por Tutor</h2>
+                <div className="chart-container">
+                  <AttendanceChart 
+                    data={filteredTutorAttendanceStats.tutors_stats.map(tutor => ({
+                      student_id: tutor.tutor_id,
+                      student_name: tutor.tutor_name,
+                      attendance_percentage: tutor.attendance_percentage,
+                      attended_weeks: tutor.attended_weeks,
+                      absent_weeks: tutor.absent_weeks,
+                      total_weeks: tutor.total_weeks
+                    }))}
+                    title="Porcentaje de Asistencia por Tutor"
+                    xAxisLabel="Tutores"
+                  />
                 </div>
-              ) : (
-                <p>No hay tutores disponibles</p>
+              </div>
+
+              {/* Lista de Tutores con muchas inasistencias */}
+              {filteredTutorAttendanceStats.tutors_with_3_plus_absences.length > 0 && (
+                <div className="students-absences-section">
+                  <h2 className="section-title">Tutores con más de 3 Inasistencias</h2>
+                  <div className="absences-list">
+                    {filteredTutorAttendanceStats.tutors_with_3_plus_absences.map((tutor) => (
+                      <div key={tutor.tutor_id} className="absence-card">
+                        <h4>{tutor.tutor_name}</h4>
+                        <p className="absence-count">
+                          Inasistencias: {tutor.absent_weeks}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
-            </div>
+
+              {/* Tabla de tutores */}
+              <div className="tutors-section">
+                <h2 className="section-title">Tutores</h2>
+                {tutores.length > 0 ? (
+                  <div className="table-container">
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          <th>Nombre</th>
+                          <th>Equipo</th>
+                          <th>Colegio</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {tutores.map((tutor) => (
+                          <tr key={tutor.id}>
+                            <td>{tutor.nombre} {tutor.apellido}</td>
+                            <td>{getEquipoNombre(tutor.equipo_id)}</td>
+                            <td>{getColegioNombre(tutor.equipo_id)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p>No hay tutores disponibles</p>
+                )}
+              </div>
+            </>
           )}
+
         </>
       )}
     </div>

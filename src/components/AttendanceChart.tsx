@@ -22,7 +22,7 @@ ChartJS.register(
 interface StudentAttendanceData {
   student_id: number;
   student_name: string;
-  course: string;
+  course?: string;
   attendance_percentage: number;
   attended_weeks: number;
   absent_weeks: number;
@@ -31,9 +31,11 @@ interface StudentAttendanceData {
 
 interface AttendanceChartProps {
   data: StudentAttendanceData[];
+  title?: string;
+  xAxisLabel?: string;
 }
 
-const AttendanceChart: React.FC<AttendanceChartProps> = ({ data }) => {
+const AttendanceChart: React.FC<AttendanceChartProps> = ({ data, title = 'Porcentaje de Asistencia', xAxisLabel = 'Personas' }) => {
   const chartData = {
     labels: data.map(student => student.student_name),
     datasets: [
@@ -63,7 +65,7 @@ const AttendanceChart: React.FC<AttendanceChartProps> = ({ data }) => {
       },
       title: {
         display: true,
-        text: 'Porcentaje de Asistencia por Estudiante',
+        text: title,
         font: {
           size: 16,
           weight: 'bold' as const,
@@ -73,11 +75,15 @@ const AttendanceChart: React.FC<AttendanceChartProps> = ({ data }) => {
         callbacks: {
           afterLabel: function(context: any) {
             const student = data[context.dataIndex];
-            return [
-              `Curso: ${student.course}`,
+            const tooltipLines = [];
+            if (student.course) {
+              tooltipLines.push(`Curso: ${student.course}`);
+            }
+            tooltipLines.push(
               `Semanas asistidas: ${student.attended_weeks}/${student.total_weeks}`,
               `Inasistencias: ${student.absent_weeks}`
-            ];
+            );
+            return tooltipLines;
           }
         }
       }
@@ -94,7 +100,7 @@ const AttendanceChart: React.FC<AttendanceChartProps> = ({ data }) => {
       x: {
         title: {
           display: true,
-          text: 'Estudiantes'
+          text: xAxisLabel
         }
       }
     },

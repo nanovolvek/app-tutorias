@@ -132,6 +132,70 @@ def get_students_attendance_stats(
         "total_students": len(estudiantes)
     }
 
+@router.get("/tutors/attendance-stats")
+def get_tutors_attendance_stats(
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """Obtiene estadísticas de asistencia de tutores para el dashboard"""
+    
+    # Obtener todos los tutores
+    tutores = db.query(Tutor).all()
+    
+    stats = []
+    total_attended = 0
+    total_possible = 0
+    tutors_with_3_plus_absences = []
+    
+    for tutor in tutores:
+        # Obtener registros de asistencia del tutor
+        attendance_records = db.query(AsistenciaTutor).filter(
+            AsistenciaTutor.tutor_id == tutor.id
+        ).all()
+        
+        attended_weeks = 0
+        absent_weeks = 0
+        
+        for record in attendance_records:
+            if record.estado == EstadoAsistencia.ASISTIO:
+                attended_weeks += 1
+            elif record.estado == EstadoAsistencia.NO_ASISTIO:
+                absent_weeks += 1
+        
+        # Calcular porcentaje de asistencia
+        total_weeks = len(attendance_records) if attendance_records else 10
+        attendance_percentage = (attended_weeks / total_weeks) * 100 if total_weeks > 0 else 0
+        
+        stats.append({
+            "tutor_id": tutor.id,
+            "tutor_name": f"{tutor.nombre} {tutor.apellido}",
+            "attendance_percentage": round(attendance_percentage, 2),
+            "attended_weeks": attended_weeks,
+            "absent_weeks": absent_weeks,
+            "total_weeks": total_weeks
+        })
+        
+        total_attended += attended_weeks
+        total_possible += total_weeks
+        
+        # Verificar si tiene más de 3 inasistencias
+        if absent_weeks > 3:
+            tutors_with_3_plus_absences.append({
+                "tutor_id": tutor.id,
+                "tutor_name": f"{tutor.nombre} {tutor.apellido}",
+                "absent_weeks": absent_weeks
+            })
+    
+    # Calcular promedio general
+    overall_average = (total_attended / total_possible) * 100 if total_possible > 0 else 0
+    
+    return {
+        "tutors_stats": stats,
+        "overall_average": round(overall_average, 2),
+        "tutors_with_3_plus_absences": tutors_with_3_plus_absences,
+        "total_tutors": len(tutores)
+    }
+
 @router.post("/", response_model=AttendanceCreate)
 def create_attendance_record(
     attendance: AttendanceCreate,
