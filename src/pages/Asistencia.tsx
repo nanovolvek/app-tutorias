@@ -520,7 +520,7 @@ const Asistencia: React.FC = () => {
       const studentsMap = new Map(allStudents.map((s: any) => [s.id, s]));
       
       studentsData.forEach((student: any) => {
-        const studentInfo = studentsMap.get(student.id);
+        const studentInfo = studentsMap.get(student.id) as any;
         Object.entries(student.weekly_attendance).forEach(([weekKey, status]) => {
           const week = weeks.find(w => w.semana_key === weekKey);
           if (week) {
@@ -549,7 +549,7 @@ const Asistencia: React.FC = () => {
       const tutorsMap = new Map(allTutors.map((t: any) => [t.id, t]));
       
       tutorsData.forEach((tutor: any) => {
-        const tutorInfo = tutorsMap.get(tutor.id);
+        const tutorInfo = tutorsMap.get(tutor.id) as any;
         Object.entries(tutor.weekly_attendance).forEach(([weekKey, status]) => {
           const week = weeks.find(w => w.semana_key === weekKey);
           if (week) {
