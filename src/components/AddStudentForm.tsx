@@ -33,6 +33,7 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({ onClose, onSuccess, use
   const [equipos, setEquipos] = useState<Equipo[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [rutError, setRutError] = useState('');
   const { token } = useAuth();
 
   useEffect(() => {
@@ -60,8 +61,25 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({ onClose, onSuccess, use
     }
   };
 
+  // Función para validar formato de RUT chileno
+  const validateRUT = (rut: string): boolean => {
+    // Patrón para RUT: XX.XXX.XXX-X o X.XXX.XXX-X
+    const rutPattern = /^(\d{1,2}\.\d{3}\.\d{3}-[\dkK])$/;
+    return rutPattern.test(rut);
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    
+    // Validar RUT en tiempo real
+    if (name === 'rut') {
+      setRutError('');
+      // Si el campo no está vacío, validar formato
+      if (value.trim() !== '' && !validateRUT(value.trim())) {
+        setRutError('El RUT debe tener el formato XX.XXX.XXX-X o X.XXX.XXX-X (ejemplo: 12.345.678-9)');
+      }
+    }
+    
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -72,6 +90,14 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({ onClose, onSuccess, use
     e.preventDefault();
     setLoading(true);
     setError('');
+    setRutError('');
+
+    // Validar RUT antes de enviar
+    if (!validateRUT(formData.rut.trim())) {
+      setRutError('El RUT debe tener el formato XX.XXX.XXX-X o X.XXX.XXX-X (ejemplo: 12.345.678-9)');
+      setLoading(false);
+      return;
+    }
 
     try {
       const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
@@ -112,7 +138,16 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({ onClose, onSuccess, use
           onChange={handleInputChange}
           required
           placeholder="12.345.678-9"
+          className={rutError ? 'input-error' : ''}
         />
+        <small className="form-help-text">
+          Formato requerido: XX.XXX.XXX-X o X.XXX.XXX-X (ejemplo: 12.345.678-9 o 1.234.567-8)
+        </small>
+        {rutError && (
+          <div className="field-error-message">
+            {rutError}
+          </div>
+        )}
       </div>
 
       <div className="form-row">
@@ -228,7 +263,7 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({ onClose, onSuccess, use
         <button type="button" onClick={onClose} className="btn btn-secondary">
           Cancelar
         </button>
-        <button type="submit" disabled={loading} className="btn btn-primary">
+        <button type="submit" disabled={loading || !!rutError} className="btn btn-primary">
           {loading ? 'Guardando...' : 'Agregar Estudiante'}
         </button>
       </div>
