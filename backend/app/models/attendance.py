@@ -16,6 +16,8 @@ class AsistenciaEstudiante(Base):
     id = Column(Integer, primary_key=True, index=True)
     estudiante_id = Column(Integer, ForeignKey("estudiantes.id"), nullable=False)
     semana = Column(String, nullable=False)  # "semana_1", "semana_2", etc.
+    mes = Column(String, nullable=False)  # "Marzo", "Abril", etc. - calculado desde calendario
+    dias = Column(String, nullable=False)  # "2 al 8", "9 al 15", etc. - calculado desde calendario
     estado = Column(Enum(EstadoAsistencia), nullable=False, default=EstadoAsistencia.NO_ASISTIO)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
@@ -29,6 +31,8 @@ class AsistenciaTutor(Base):
     id = Column(Integer, primary_key=True, index=True)
     tutor_id = Column(Integer, ForeignKey("tutores.id"), nullable=False)
     semana = Column(String, nullable=False)  # "semana_1", "semana_2", etc.
+    mes = Column(String, nullable=False)  # "Marzo", "Abril", etc. - calculado desde calendario
+    dias = Column(String, nullable=False)  # "2 al 8", "9 al 15", etc. - calculado desde calendario
     estado = Column(Enum(EstadoAsistencia), nullable=False, default=EstadoAsistencia.NO_ASISTIO)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

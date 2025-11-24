@@ -258,6 +258,12 @@ def update_student_attendance(
         except ValueError:
             raise HTTPException(status_code=400, detail=f"Estado de asistencia inválido: {request.status}")
         
+        # Obtener el mes y días desde el calendario
+        calendar = load_2026_calendar()
+        week_data = next((w for w in calendar if w.get("semana_key") == request.week_key), None)
+        mes_value = week_data.get("mes") if week_data else "Desconocido"
+        dias_value = week_data.get("dias") if week_data else "N/A"
+        
         # Buscar registro existente
         existing_record = db.query(AsistenciaEstudiante).filter(
             AsistenciaEstudiante.estudiante_id == request.student_id,
@@ -267,6 +273,8 @@ def update_student_attendance(
         if existing_record:
             # Actualizar registro existente
             existing_record.estado = estado_enum
+            existing_record.mes = mes_value
+            existing_record.dias = dias_value
             try:
                 db.commit()
                 db.refresh(existing_record)
@@ -289,6 +297,8 @@ def update_student_attendance(
             new_record = AsistenciaEstudiante(
                 estudiante_id=request.student_id,
                 semana=request.week_key,
+                mes=mes_value,
+                dias=dias_value,
                 estado=estado_enum
             )
             db.add(new_record)
@@ -298,7 +308,7 @@ def update_student_attendance(
             except Exception as commit_error:
                 db.rollback()
                 print(f"Error en commit/refresh (create): {str(commit_error)}")
-                print(f"Estudiante ID: {request.student_id}, Semana: {request.week_key}, Estado: {request.status}")
+                print(f"Estudiante ID: {request.student_id}, Semana: {request.week_key}, Estado: {request.status}, Mes: {mes_value}")
                 raise HTTPException(status_code=500, detail=f"Error al crear registro: {str(commit_error)}")
             
             return {
@@ -345,6 +355,12 @@ def update_tutor_attendance(
         except ValueError:
             raise HTTPException(status_code=400, detail=f"Estado de asistencia inválido: {request.status}")
         
+        # Obtener el mes y días desde el calendario
+        calendar = load_2026_calendar()
+        week_data = next((w for w in calendar if w.get("semana_key") == request.week_key), None)
+        mes_value = week_data.get("mes") if week_data else "Desconocido"
+        dias_value = week_data.get("dias") if week_data else "N/A"
+        
         # Buscar registro existente
         existing_record = db.query(AsistenciaTutor).filter(
             AsistenciaTutor.tutor_id == request.tutor_id,
@@ -354,6 +370,8 @@ def update_tutor_attendance(
         if existing_record:
             # Actualizar registro existente
             existing_record.estado = estado_enum
+            existing_record.mes = mes_value
+            existing_record.dias = dias_value
             try:
                 db.commit()
                 db.refresh(existing_record)
@@ -376,6 +394,8 @@ def update_tutor_attendance(
             new_record = AsistenciaTutor(
                 tutor_id=request.tutor_id,
                 semana=request.week_key,
+                mes=mes_value,
+                dias=dias_value,
                 estado=estado_enum
             )
             db.add(new_record)
@@ -385,7 +405,7 @@ def update_tutor_attendance(
             except Exception as commit_error:
                 db.rollback()
                 print(f"Error en commit/refresh (create tutor): {str(commit_error)}")
-                print(f"Tutor ID: {request.tutor_id}, Semana: {request.week_key}, Estado: {request.status}")
+                print(f"Tutor ID: {request.tutor_id}, Semana: {request.week_key}, Estado: {request.status}, Mes: {mes_value}")
                 raise HTTPException(status_code=500, detail=f"Error al crear registro: {str(commit_error)}")
             
             return {
