@@ -22,10 +22,10 @@ def reset_sequences():
         engine = create_engine(DATABASE_URL)
         
         with engine.connect() as conn:
-            print("🔄 Reseteando secuencias de IDs...")
+            print("[*] Reseteando secuencias de IDs...")
             
             # Resetear secuencia de asistencia_estudiantes
-            print("\n📊 Reseteando asistencia_estudiantes...")
+            print("\n[*] Reseteando asistencia_estudiantes...")
             result = conn.execute(text("""
                 SELECT setval(
                     pg_get_serial_sequence('asistencia_estudiantes', 'id'),
@@ -34,10 +34,10 @@ def reset_sequences():
                 ) as new_value;
             """))
             new_value = result.scalar()
-            print(f"   ✅ Secuencia reseteada. Nuevo valor: {new_value}")
+            print(f"   [OK] Secuencia reseteada. Nuevo valor: {new_value}")
             
             # Resetear secuencia de asistencia_tutores
-            print("\n📊 Reseteando asistencia_tutores...")
+            print("\n[*] Reseteando asistencia_tutores...")
             result = conn.execute(text("""
                 SELECT setval(
                     pg_get_serial_sequence('asistencia_tutores', 'id'),
@@ -46,10 +46,10 @@ def reset_sequences():
                 ) as new_value;
             """))
             new_value = result.scalar()
-            print(f"   ✅ Secuencia reseteada. Nuevo valor: {new_value}")
+            print(f"   [OK] Secuencia reseteada. Nuevo valor: {new_value}")
             
             # Verificar secuencias
-            print("\n🔍 Verificando secuencias...")
+            print("\n[*] Verificando secuencias...")
             result = conn.execute(text("""
                 SELECT 
                     'asistencia_estudiantes' as tabla,
@@ -64,24 +64,24 @@ def reset_sequences():
                 FROM asistencia_tutores_id_seq;
             """))
             
-            print("\n📋 Estado de las secuencias:")
+            print("\n[*] Estado de las secuencias:")
             for row in result:
                 tabla = row[0]
                 ultimo_valor = row[1]
                 max_id_tabla = row[2]
                 print(f"   {tabla}:")
-                print(f"      Último valor en secuencia: {ultimo_valor}")
-                print(f"      Máximo ID en tabla: {max_id_tabla}")
+                print(f"      Ultimo valor en secuencia: {ultimo_valor}")
+                print(f"      Maximo ID en tabla: {max_id_tabla}")
                 if ultimo_valor >= max_id_tabla:
-                    print(f"      ✅ Secuencia correcta")
+                    print(f"      [OK] Secuencia correcta")
                 else:
-                    print(f"      ⚠️  Secuencia desincronizada")
+                    print(f"      [WARNING] Secuencia desincronizada")
             
             conn.commit()
-            print("\n✅ ¡Secuencias reseteadas correctamente!")
+            print("\n[OK] Secuencias reseteadas correctamente!")
             
     except Exception as e:
-        print(f"\n❌ Error al resetear secuencias: {str(e)}")
+        print(f"\n[ERROR] Error al resetear secuencias: {str(e)}")
         sys.exit(1)
 
 if __name__ == "__main__":
