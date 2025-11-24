@@ -307,8 +307,17 @@ def update_student_attendance(
                 db.refresh(new_record)
             except Exception as commit_error:
                 db.rollback()
-                print(f"Error en commit/refresh (create): {str(commit_error)}")
+                error_str = str(commit_error)
+                print(f"Error en commit/refresh (create): {error_str}")
                 print(f"Estudiante ID: {request.student_id}, Semana: {request.week_key}, Estado: {request.status}, Mes: {mes_value}")
+                
+                # Detectar error de secuencia desincronizada
+                if "duplicate key" in error_str.lower() or "unique violation" in error_str.lower() or "llave duplicada" in error_str.lower():
+                    raise HTTPException(
+                        status_code=500,
+                        detail="Error: La secuencia de IDs está desincronizada. Ejecuta el script 'reset_sequences.py' en la base de datos de producción."
+                    )
+                
                 raise HTTPException(status_code=500, detail=f"Error al crear registro: {str(commit_error)}")
             
             return {
@@ -404,8 +413,17 @@ def update_tutor_attendance(
                 db.refresh(new_record)
             except Exception as commit_error:
                 db.rollback()
-                print(f"Error en commit/refresh (create tutor): {str(commit_error)}")
+                error_str = str(commit_error)
+                print(f"Error en commit/refresh (create tutor): {error_str}")
                 print(f"Tutor ID: {request.tutor_id}, Semana: {request.week_key}, Estado: {request.status}, Mes: {mes_value}")
+                
+                # Detectar error de secuencia desincronizada
+                if "duplicate key" in error_str.lower() or "unique violation" in error_str.lower() or "llave duplicada" in error_str.lower():
+                    raise HTTPException(
+                        status_code=500,
+                        detail="Error: La secuencia de IDs está desincronizada. Ejecuta el script 'reset_sequences.py' en la base de datos de producción."
+                    )
+                
                 raise HTTPException(status_code=500, detail=f"Error al crear registro: {str(commit_error)}")
             
             return {

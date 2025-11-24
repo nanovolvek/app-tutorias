@@ -71,7 +71,6 @@ python -m venv venv
 venv\Scripts\activate  # Windows
 
 pip install -r requirements.txt
-
 # El backend se conecta automáticamente a la base de datos de producción
 python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
@@ -129,6 +128,26 @@ python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 # Ejecutar script de migración
 python migrate_local_to_render_final.py
 ```
+
+### **Resolver Error de Secuencia Desincronizada**
+
+Si recibes el error `Duplicate Key` o `Unique Violation` al crear registros de asistencia, la secuencia de IDs está desincronizada. Para resolverlo:
+
+**Opción 1: Usar el script Python (Recomendado)**
+```bash
+cd backend
+python -m venv venv
+venv\Scripts\activate  # Windows
+pip install -r requirements.txt
+python scripts/reset_sequences.py
+```
+
+**Opción 2: Ejecutar SQL directamente en DBeaver**
+1. Conecta a la base de datos de producción en DBeaver
+2. Abre el archivo `backend/scripts/reset_sequences.sql`
+3. Ejecuta el script completo
+
+Esto reseteará las secuencias de IDs para `asistencia_estudiantes` y `asistencia_tutores`.
 
 ## 📁 Estructura del Proyecto
 
