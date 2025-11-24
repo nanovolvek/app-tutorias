@@ -238,61 +238,85 @@ def update_student_attendance(
     current_user = Depends(get_current_user)
 ):
     """Crear o actualizar registro de asistencia de estudiante"""
-    
-    # Validar que student_id esté presente
-    if request.student_id is None:
-        raise HTTPException(status_code=400, detail="student_id es requerido")
-    
-    # Verificar que el estudiante existe
-    student = db.query(Estudiante).filter(Estudiante.id == request.student_id).first()
-    if not student:
-        raise HTTPException(status_code=404, detail="Estudiante no encontrado")
-    
-    # Verificar que el estado es válido
     try:
-        estado_enum = EstadoAsistencia(request.status)
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Estado de asistencia inválido")
-    
-    # Buscar registro existente
-    existing_record = db.query(AsistenciaEstudiante).filter(
-        AsistenciaEstudiante.estudiante_id == request.student_id,
-        AsistenciaEstudiante.semana == request.week_key
-    ).first()
-    
-    if existing_record:
-        # Actualizar registro existente
-        existing_record.estado = estado_enum
-        db.commit()
-        db.refresh(existing_record)
-        return {
-            "message": "Registro de asistencia actualizado",
-            "record": {
-                "id": existing_record.id,
-                "student_id": existing_record.estudiante_id,
-                "week": existing_record.semana,
-                "status": existing_record.estado.value
+        # Validar que student_id esté presente
+        if request.student_id is None:
+            raise HTTPException(status_code=400, detail="student_id es requerido")
+        
+        # Verificar que el estudiante existe
+        student = db.query(Estudiante).filter(Estudiante.id == request.student_id).first()
+        if not student:
+            raise HTTPException(status_code=404, detail="Estudiante no encontrado")
+        
+        # Verificar que el estudiante tiene un equipo asignado
+        if not student.equipo_id:
+            raise HTTPException(status_code=400, detail="El estudiante no tiene un equipo asignado")
+        
+        # Verificar que el estado es válido
+        try:
+            estado_enum = EstadoAsistencia(request.status)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Estado de asistencia inválido: {request.status}")
+        
+        # Buscar registro existente
+        existing_record = db.query(AsistenciaEstudiante).filter(
+            AsistenciaEstudiante.estudiante_id == request.student_id,
+            AsistenciaEstudiante.semana == request.week_key
+        ).first()
+        
+        if existing_record:
+            # Actualizar registro existente
+            existing_record.estado = estado_enum
+            try:
+                db.commit()
+                db.refresh(existing_record)
+            except Exception as commit_error:
+                db.rollback()
+                print(f"Error en commit/refresh (update): {str(commit_error)}")
+                raise HTTPException(status_code=500, detail=f"Error al actualizar registro: {str(commit_error)}")
+            
+            return {
+                "message": "Registro de asistencia actualizado",
+                "record": {
+                    "id": existing_record.id,
+                    "student_id": existing_record.estudiante_id,
+                    "week": existing_record.semana,
+                    "status": existing_record.estado.value if existing_record.estado else None
+                }
             }
-        }
-    else:
-        # Crear nuevo registro
-        new_record = AsistenciaEstudiante(
-            estudiante_id=request.student_id,
-            semana=request.week_key,
-            estado=estado_enum
-        )
-        db.add(new_record)
-        db.commit()
-        db.refresh(new_record)
-        return {
-            "message": "Registro de asistencia creado",
-            "record": {
-                "id": new_record.id,
-                "student_id": new_record.estudiante_id,
-                "week": new_record.semana,
-                "status": new_record.estado.value
+        else:
+            # Crear nuevo registro
+            new_record = AsistenciaEstudiante(
+                estudiante_id=request.student_id,
+                semana=request.week_key,
+                estado=estado_enum
+            )
+            db.add(new_record)
+            try:
+                db.commit()
+                db.refresh(new_record)
+            except Exception as commit_error:
+                db.rollback()
+                print(f"Error en commit/refresh (create): {str(commit_error)}")
+                print(f"Estudiante ID: {request.student_id}, Semana: {request.week_key}, Estado: {request.status}")
+                raise HTTPException(status_code=500, detail=f"Error al crear registro: {str(commit_error)}")
+            
+            return {
+                "message": "Registro de asistencia creado",
+                "record": {
+                    "id": new_record.id,
+                    "student_id": new_record.estudiante_id,
+                    "week": new_record.semana,
+                    "status": new_record.estado.value if new_record.estado else None
+                }
             }
-        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        print(f"Error en update_student_attendance: {str(e)}")
+        print(f"Request data: student_id={request.student_id}, week_key={request.week_key}, status={request.status}")
+        raise HTTPException(status_code=500, detail=f"Error interno al actualizar asistencia: {str(e)}")
 
 @router.post("/tutors")
 def update_tutor_attendance(
@@ -301,61 +325,85 @@ def update_tutor_attendance(
     current_user = Depends(get_current_user)
 ):
     """Crear o actualizar registro de asistencia de tutor"""
-    
-    # Validar que tutor_id esté presente
-    if request.tutor_id is None:
-        raise HTTPException(status_code=400, detail="tutor_id es requerido")
-    
-    # Verificar que el tutor existe
-    tutor = db.query(Tutor).filter(Tutor.id == request.tutor_id).first()
-    if not tutor:
-        raise HTTPException(status_code=404, detail="Tutor no encontrado")
-    
-    # Verificar que el estado es válido
     try:
-        estado_enum = EstadoAsistencia(request.status)
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Estado de asistencia inválido")
-    
-    # Buscar registro existente
-    existing_record = db.query(AsistenciaTutor).filter(
-        AsistenciaTutor.tutor_id == request.tutor_id,
-        AsistenciaTutor.semana == request.week_key
-    ).first()
-    
-    if existing_record:
-        # Actualizar registro existente
-        existing_record.estado = estado_enum
-        db.commit()
-        db.refresh(existing_record)
-        return {
-            "message": "Registro de asistencia actualizado",
-            "record": {
-                "id": existing_record.id,
-                "tutor_id": existing_record.tutor_id,
-                "week": existing_record.semana,
-                "status": existing_record.estado.value
+        # Validar que tutor_id esté presente
+        if request.tutor_id is None:
+            raise HTTPException(status_code=400, detail="tutor_id es requerido")
+        
+        # Verificar que el tutor existe
+        tutor = db.query(Tutor).filter(Tutor.id == request.tutor_id).first()
+        if not tutor:
+            raise HTTPException(status_code=404, detail="Tutor no encontrado")
+        
+        # Verificar que el tutor tiene un equipo asignado
+        if not tutor.equipo_id:
+            raise HTTPException(status_code=400, detail="El tutor no tiene un equipo asignado")
+        
+        # Verificar que el estado es válido
+        try:
+            estado_enum = EstadoAsistencia(request.status)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Estado de asistencia inválido: {request.status}")
+        
+        # Buscar registro existente
+        existing_record = db.query(AsistenciaTutor).filter(
+            AsistenciaTutor.tutor_id == request.tutor_id,
+            AsistenciaTutor.semana == request.week_key
+        ).first()
+        
+        if existing_record:
+            # Actualizar registro existente
+            existing_record.estado = estado_enum
+            try:
+                db.commit()
+                db.refresh(existing_record)
+            except Exception as commit_error:
+                db.rollback()
+                print(f"Error en commit/refresh (update tutor): {str(commit_error)}")
+                raise HTTPException(status_code=500, detail=f"Error al actualizar registro: {str(commit_error)}")
+            
+            return {
+                "message": "Registro de asistencia actualizado",
+                "record": {
+                    "id": existing_record.id,
+                    "tutor_id": existing_record.tutor_id,
+                    "week": existing_record.semana,
+                    "status": existing_record.estado.value if existing_record.estado else None
+                }
             }
-        }
-    else:
-        # Crear nuevo registro
-        new_record = AsistenciaTutor(
-            tutor_id=request.tutor_id,
-            semana=request.week_key,
-            estado=estado_enum
-        )
-        db.add(new_record)
-        db.commit()
-        db.refresh(new_record)
-        return {
-            "message": "Registro de asistencia creado",
-            "record": {
-                "id": new_record.id,
-                "tutor_id": new_record.tutor_id,
-                "week": new_record.semana,
-                "status": new_record.estado.value
+        else:
+            # Crear nuevo registro
+            new_record = AsistenciaTutor(
+                tutor_id=request.tutor_id,
+                semana=request.week_key,
+                estado=estado_enum
+            )
+            db.add(new_record)
+            try:
+                db.commit()
+                db.refresh(new_record)
+            except Exception as commit_error:
+                db.rollback()
+                print(f"Error en commit/refresh (create tutor): {str(commit_error)}")
+                print(f"Tutor ID: {request.tutor_id}, Semana: {request.week_key}, Estado: {request.status}")
+                raise HTTPException(status_code=500, detail=f"Error al crear registro: {str(commit_error)}")
+            
+            return {
+                "message": "Registro de asistencia creado",
+                "record": {
+                    "id": new_record.id,
+                    "tutor_id": new_record.tutor_id,
+                    "week": new_record.semana,
+                    "status": new_record.estado.value if new_record.estado else None
+                }
             }
-        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        print(f"Error en update_tutor_attendance: {str(e)}")
+        print(f"Request data: tutor_id={request.tutor_id}, week_key={request.week_key}, status={request.status}")
+        raise HTTPException(status_code=500, detail=f"Error interno al actualizar asistencia: {str(e)}")
 
 @router.delete("/students")
 def delete_student_attendance(

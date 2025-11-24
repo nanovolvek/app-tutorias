@@ -381,8 +381,17 @@ const Asistencia: React.FC = () => {
         }));
       } else {
         console.error('Error updating attendance:', response.status);
-        const errorData = await response.json();
-        console.error('Error details:', errorData);
+        let errorMessage = `Error ${response.status}: `;
+        try {
+          const errorData = await response.json();
+          errorMessage += errorData.detail || 'Error desconocido';
+          console.error('Error details:', errorData);
+        } catch (e) {
+          const errorText = await response.text();
+          errorMessage += errorText || 'Error al procesar la respuesta';
+          console.error('Error response text:', errorText);
+        }
+        alert(errorMessage);
       }
     } catch (error) {
       console.error('Error updating attendance:', error);
