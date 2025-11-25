@@ -43,7 +43,7 @@ interface AttendanceRecord {
 }
 
 const Asistencia: React.FC = () => {
-  const { token, user } = useAuth();
+  const { fetchWithAuth, user } = useAuth();
   
   // Estados
   const [weeks, setWeeks] = useState<Week[]>([]);
@@ -68,16 +68,14 @@ const Asistencia: React.FC = () => {
   ];
 
   useEffect(() => {
-    if (token) {
-      fetchInitialData();
-    }
-  }, [token, user]);
+    fetchInitialData();
+  }, [user]);
 
   useEffect(() => {
     if (selectedPersonType && selectedMonth) {
       fetchAttendanceRecords();
     }
-  }, [selectedPersonType, selectedMonth, selectedEquipo, token]);
+  }, [selectedPersonType, selectedMonth, selectedEquipo]);
 
   const fetchInitialData = async () => {
     try {
@@ -108,89 +106,60 @@ const Asistencia: React.FC = () => {
   };
 
   const fetchCalendar = async () => {
-    const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
-    console.log('🔍 Fetching calendar from:', apiUrl);
-    
-    const response = await fetch(`${apiUrl}/attendance-2026/calendar/weeks`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    console.log('📅 Calendar response status:', response.status);
-    
-    if (response.ok) {
-      const data = await response.json();
-      console.log('📅 Calendar data received:', data);
-      if (data.weeks && Array.isArray(data.weeks)) {
-        setWeeks(data.weeks);
-        console.log('✅ Calendar weeks set:', data.weeks.length);
+    try {
+      const response = await fetchWithAuth('/attendance-2026/calendar/weeks');
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.weeks && Array.isArray(data.weeks)) {
+          setWeeks(data.weeks);
+        } else {
+          setWeeks([]);
+        }
       } else {
-        setWeeks([]); // Fallback a array vacío
-        console.log('⚠️ Using mock weeks fallback');
+        setWeeks([]);
       }
-    } else {
-      console.error('❌ Error fetching calendar:', response.status);
-      setWeeks([]); // Fallback a array vacío
+    } catch (error) {
+      console.error('Error fetching calendar:', error);
+      setWeeks([]);
     }
   };
 
   const fetchStudents = async () => {
-    const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
-    console.log('👥 Fetching students from:', apiUrl);
-    
-    const response = await fetch(`${apiUrl}/estudiantes/`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
+    try {
+      const response = await fetchWithAuth('/estudiantes/');
+      if (response.ok) {
+        const data = await response.json();
+        if (Array.isArray(data)) {
+          setStudents(data);
+        } else {
+          setStudents([]);
+        }
       }
-    });
-    
-    console.log('👥 Students response status:', response.status);
-    
-    if (response.ok) {
-      const data = await response.json();
-      console.log('👥 Students data received:', data.length, 'students');
-      if (Array.isArray(data)) {
-        setStudents(data);
-      } else {
-        setStudents([]);
-      }
-    } else {
-      console.error('❌ Error fetching students:', response.status);
+    } catch (error) {
+      console.error('Error fetching students:', error);
     }
   };
 
   const fetchTutors = async () => {
-    const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
-    const response = await fetch(`${apiUrl}/tutores/`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
+    try {
+      const response = await fetchWithAuth('/tutores/');
+      if (response.ok) {
+        const data = await response.json();
+        if (Array.isArray(data)) {
+          setTutors(data);
+        } else {
+          setTutors([]);
+        }
       }
-    });
-    
-    if (response.ok) {
-      const data = await response.json();
-      if (Array.isArray(data)) {
-        setTutors(data);
-      } else {
-        setTutors([]);
-      }
+    } catch (error) {
+      console.error('Error fetching tutors:', error);
     }
   };
 
   const fetchEquipos = async () => {
-    const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
-    console.log('👥 Fetching equipos from:', apiUrl);
-    
-    const response = await fetch(`${apiUrl}/attendance-2026/equipos`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    });
+    try {
+      const response = await fetchWithAuth('/attendance-2026/equipos');
     
     console.log('👥 Equipos response status:', response.status);
     
@@ -212,7 +181,6 @@ const Asistencia: React.FC = () => {
     
     setLoading(true);
     try {
-      const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
       const personType = selectedPersonType === 'estudiante' ? 'students' : 'tutors';
       
       // Construir URL con parámetros
@@ -220,15 +188,9 @@ const Asistencia: React.FC = () => {
       params.append('month', selectedMonth);
       if (selectedEquipo) params.append('equipo_id', selectedEquipo.toString());
       
-      const url = `${apiUrl}/attendance-2026/${personType}?${params.toString()}`;
-      console.log('📊 Fetching attendance from:', url);
+      const url = `/attendance-2026/${personType}?${params.toString()}`;
       
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await fetchWithAuth(url);
       
       console.log('📊 Attendance response status:', response.status);
       
@@ -274,7 +236,6 @@ const Asistencia: React.FC = () => {
 
   const updateAttendanceStatus = async (weekKey: string, estado: string | null, personId: number) => {
     try {
-      const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
       const personType = selectedPersonType === 'estudiante' ? 'students' : 'tutors';
       
       if (estado === null) {
@@ -287,12 +248,8 @@ const Asistencia: React.FC = () => {
         }
         params.append('week_key', weekKey);
         
-        const response = await fetch(`${apiUrl}/attendance-2026/${personType}?${params.toString()}`, {
+        const response = await fetchWithAuth(`/attendance-2026/${personType}?${params.toString()}`, {
           method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
         });
         
         if (response.ok) {
@@ -334,12 +291,8 @@ const Asistencia: React.FC = () => {
         requestBody.tutor_id = personId;
       }
       
-      const response = await fetch(`${apiUrl}/attendance-2026/${personType}`, {
+      const response = await fetchWithAuth(`/attendance-2026/${personType}`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
         body: JSON.stringify(requestBody)
       });
       
@@ -457,7 +410,6 @@ const Asistencia: React.FC = () => {
   const handleExportExcel = async () => {
     try {
       const XLSX = await import('xlsx');
-      const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
       
       // Obtener todos los meses disponibles
       const allMonths = getUniqueMonths();
@@ -467,15 +419,8 @@ const Asistencia: React.FC = () => {
       for (const month of allMonths) {
         const params = new URLSearchParams();
         params.append('month', month);
-        // No aplicar ningún filtro - exportar todos los datos
         
-        const response = await fetch(`${apiUrl}/attendance-2026/students?${params.toString()}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        
+        const response = await fetchWithAuth(`/attendance-2026/students?${params.toString()}`);
         if (response.ok) {
           const data = await response.json();
           studentsData.push(...data.students);
@@ -487,15 +432,8 @@ const Asistencia: React.FC = () => {
       for (const month of allMonths) {
         const params = new URLSearchParams();
         params.append('month', month);
-        // No aplicar ningún filtro - exportar todos los datos
         
-        const response = await fetch(`${apiUrl}/attendance-2026/tutors?${params.toString()}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        
+        const response = await fetchWithAuth(`/attendance-2026/tutors?${params.toString()}`);
         if (response.ok) {
           const data = await response.json();
           tutorsData.push(...data.tutors);
@@ -503,21 +441,11 @@ const Asistencia: React.FC = () => {
       }
       
       // Obtener información completa de estudiantes (con RUT, curso, etc.)
-      const studentsResponse = await fetch(`${apiUrl}/estudiantes/`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const studentsResponse = await fetchWithAuth('/estudiantes/');
       const allStudents = studentsResponse.ok ? await studentsResponse.json() : [];
       
       // Obtener información completa de tutores (con email, etc.)
-      const tutorsResponse = await fetch(`${apiUrl}/tutores/`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const tutorsResponse = await fetchWithAuth('/tutores/');
       const allTutors = tutorsResponse.ok ? await tutorsResponse.json() : [];
       
       // Preparar datos de estudiantes para Excel
