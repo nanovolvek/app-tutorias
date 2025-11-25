@@ -75,6 +75,7 @@ const CreateSchoolTeamForm: React.FC<CreateSchoolTeamFormProps> = ({ onSuccess, 
         if (activeTab === 'team') {
           setSelectedColegioId(newSchool.id);
         }
+        onSuccess(); // Recargar datos en el Dashboard
         setTimeout(() => {
           setSuccessMessage('');
         }, 2000);
@@ -117,6 +118,7 @@ const CreateSchoolTeamForm: React.FC<CreateSchoolTeamFormProps> = ({ onSuccess, 
         setTeamNombre('');
         setTeamDescripcion('');
         setSelectedColegioId('');
+        onSuccess(); // Recargar datos en el Dashboard
         setTimeout(() => {
           setSuccessMessage('');
           // No cerrar automáticamente, permitir crear más
