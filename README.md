@@ -72,7 +72,7 @@ venv\Scripts\activate  # Windows
 
 pip install -r requirements.txt
 # El backend se conecta automáticamente a la base de datos de producción
-python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+
 ```
 
 ### **5. Acceder a la Aplicación**

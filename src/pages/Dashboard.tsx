@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import AttendanceChart from '../components/AttendanceChart';
+import CreateSchoolTeamForm from '../components/CreateSchoolTeamForm';
 
 interface Estudiante {
   id: number;
@@ -80,6 +81,7 @@ const Dashboard: React.FC = () => {
   const [filteredAttendanceStats, setFilteredAttendanceStats] = useState<AttendanceStats | null>(null);
   const [filteredTutorAttendanceStats, setFilteredTutorAttendanceStats] = useState<TutorAttendanceStats | null>(null);
   const [selectedView, setSelectedView] = useState<'estudiantes' | 'tutores'>('estudiantes');
+  const [showCreateSchoolTeamForm, setShowCreateSchoolTeamForm] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const { fetchWithAuth, user } = useAuth();
@@ -465,7 +467,14 @@ const Dashboard: React.FC = () => {
             </>
           )}
 
-        </>
+        </> 
+      )}
+
+      {showCreateSchoolTeamForm && (
+        <CreateSchoolTeamForm
+          onSuccess={handleCreateSuccess}
+          onClose={() => setShowCreateSchoolTeamForm(false)}
+        />
       )}
     </div>
   );

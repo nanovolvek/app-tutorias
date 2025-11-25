@@ -39,7 +39,8 @@ def create_school(
     current_user: User = Depends(get_admin_user)
 ):
     """Crear un nuevo colegio (solo administradores)"""
-    db_school = School(**school.dict())
+    # Mapear nombre del schema al modelo
+    db_school = School(nombre=school.nombre, comuna=school.comuna)
     db.add(db_school)
     db.commit()
     db.refresh(db_school)
@@ -58,8 +59,10 @@ def update_school(
         raise HTTPException(status_code=404, detail="Colegio no encontrado")
     
     update_data = school.dict(exclude_unset=True)
-    for field, value in update_data.items():
-        setattr(db_school, field, value)
+    if 'nombre' in update_data:
+        db_school.nombre = update_data['nombre']
+    if 'comuna' in update_data:
+        db_school.comuna = update_data['comuna']
     
     db.commit()
     db.refresh(db_school)
