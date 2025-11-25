@@ -313,11 +313,7 @@ const Estudiantes: React.FC = () => {
             <DeleteStudentForm 
               students={students}
               onClose={() => setShowDeleteForm(false)}
-              onSuccess={() => {
-                setShowDeleteForm(false);
-                // Recargar datos
-                window.location.reload();
-              }}
+              onSuccess={handleDeleteSuccess}
             />
           </div>
         </div>
