@@ -10,7 +10,7 @@ load_dotenv()
 # Configuración de seguridad
 SECRET_KEY = os.getenv("SECRET_KEY", "tu_clave_secreta_muy_larga_y_segura_aqui_123456789")
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "1440"))  # 24 horas por defecto
 
 # Contexto para hashear contraseñas
 pwd_context = CryptContext(schemes=["sha256_crypt"], deprecated="auto")
