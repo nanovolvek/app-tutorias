@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { fetchWithAuth } from '../utils/api';
 
 interface User {
   id: number;
@@ -16,6 +17,8 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
+  fetchWithAuth: (url: string, options?: RequestInit) => Promise<Response>;
+  verifyToken: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -37,6 +40,57 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const logout = () => {
+    setToken(null);
+    setUser(null);
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    // Redirigir al login
+    if (window.location.pathname !== '/') {
+      window.location.href = '/';
+    }
+  };
+
+  const verifyToken = async (): Promise<boolean> => {
+    const currentToken = token || localStorage.getItem('token');
+    if (!currentToken) {
+      return false;
+    }
+
+    try {
+      const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${apiUrl}/auth/me`, {
+        headers: {
+          'Authorization': `Bearer ${currentToken}`,
+        },
+      });
+
+      if (response.ok) {
+        const userData = await response.json();
+        setUser(userData);
+        setToken(currentToken);
+        localStorage.setItem('token', currentToken);
+        localStorage.setItem('user', JSON.stringify(userData));
+        return true;
+      } else {
+        // Token inválido o expirado
+        logout();
+        return false;
+      }
+    } catch (error) {
+      console.error('Error verificando token:', error);
+      logout();
+      return false;
+    }
+  };
+
+  const handleFetchWithAuth = async (url: string, options: RequestInit = {}): Promise<Response> => {
+    return fetchWithAuth(url, {
+      ...options,
+      token: token || localStorage.getItem('token'),
+    });
+  };
+
   useEffect(() => {
     // Verificar si hay un token guardado al cargar la aplicación
     const savedToken = localStorage.getItem('token');
@@ -45,6 +99,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (savedToken && savedUser) {
       setToken(savedToken);
       setUser(JSON.parse(savedUser));
+      
+      // Verificar que el token sigue siendo válido
+      verifyToken().catch(() => {
+        // Si el token no es válido, limpiar y redirigir
+        logout();
+      });
     }
     setIsLoading(false);
   }, []);
@@ -115,13 +175,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const logout = () => {
-    setToken(null);
-    setUser(null);
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-  };
-
   const value: AuthContextType = {
     user,
     token,
@@ -129,6 +182,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isLoading,
     login,
     logout,
+    fetchWithAuth: handleFetchWithAuth,
+    verifyToken,
   };
 
   return (
