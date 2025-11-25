@@ -103,6 +103,16 @@ const Estudiantes: React.FC = () => {
     return 'attendance-low';
   };
 
+  const handleAddSuccess = () => {
+    // Recargar datos
+    window.location.reload();
+  };
+
+  const handleDeleteSuccess = () => {
+    // Recargar datos
+    window.location.reload();
+  };
+
   const handleExportExcel = async () => {
     try {
       const XLSX = await import('xlsx');
