@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Body
+from fastapi import APIRouter, Depends, HTTPException, status, Body, UploadFile, File
 from sqlalchemy.orm import Session, joinedload
 from typing import List
 from app.database import get_db
@@ -8,6 +8,9 @@ from app.models.school import Colegio
 from app.schemas.tutor import Tutor as TutorSchema, TutorCreate, TutorDeleteRequest
 from app.models.attendance import AsistenciaTutor
 from app.auth.dependencies import get_current_active_user, get_admin_user, get_tutor_user
+from openpyxl import load_workbook
+from io import BytesIO
+import re
 
 router = APIRouter(prefix="/tutores", tags=["tutores"])
 
@@ -149,3 +152,151 @@ def delete_tutor(
         db.delete(tutor)
         db.commit()
         return {"message": "Tutor eliminado completamente de la base de datos"}
+
+@router.post("/import")
+async def import_tutores(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user = Depends(get_admin_user)
+):
+    """Importar tutores desde un archivo Excel (solo administradores)"""
+    
+    # Verificar que el archivo sea Excel
+    if not file.filename.endswith(('.xlsx', '.xls')):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El archivo debe ser un Excel (.xlsx o .xls)"
+        )
+    
+    try:
+        # Leer el archivo Excel
+        contents = await file.read()
+        workbook = load_workbook(filename=BytesIO(contents), read_only=True, data_only=True)
+        sheet = workbook.active
+        
+        # Validar encabezados esperados
+        headers = [cell.value for cell in sheet[1]]
+        expected_headers = ['Nombre', 'Apellido', 'Email', 'Equipo ID']
+        
+        # Verificar que los encabezados estén presentes (case insensitive)
+        headers_lower = [str(h).strip().lower() if h else '' for h in headers]
+        expected_lower = [h.lower() for h in expected_headers]
+        
+        missing_headers = []
+        for expected in expected_lower:
+            if expected not in headers_lower:
+                missing_headers.append(expected)
+        
+        if missing_headers:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Faltan las siguientes columnas requeridas: {', '.join(missing_headers)}"
+            )
+        
+        # Obtener índices de columnas
+        header_map = {}
+        for idx, header in enumerate(headers, start=1):
+            if header:
+                header_lower = str(header).strip().lower()
+                if header_lower in expected_lower:
+                    header_map[expected_lower.index(header_lower)] = idx
+        
+        # Procesar filas
+        created = 0
+        errors = []
+        existing_emails = set()
+        
+        for row_num, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
+            # Saltar filas vacías
+            if not any(row):
+                continue
+            
+            try:
+                # Extraer datos según índices
+                nombre = str(row[header_map[0] - 1]).strip() if row[header_map[0] - 1] else None
+                apellido = str(row[header_map[1] - 1]).strip() if row[header_map[1] - 1] else None
+                email = str(row[header_map[2] - 1]).strip() if row[header_map[2] - 1] else None
+                equipo_id = row[header_map[3] - 1]
+                
+                # Validaciones
+                if not nombre:
+                    errors.append(f"Fila {row_num}: Nombre es requerido")
+                    continue
+                
+                if not apellido:
+                    errors.append(f"Fila {row_num}: Apellido es requerido")
+                    continue
+                
+                if not email:
+                    errors.append(f"Fila {row_num}: Email es requerido")
+                    continue
+                
+                # Validar formato de email básico
+                email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+                if not re.match(email_pattern, email):
+                    errors.append(f"Fila {row_num}: Email '{email}' no tiene un formato válido")
+                    continue
+                
+                if not equipo_id:
+                    errors.append(f"Fila {row_num}: Equipo ID es requerido")
+                    continue
+                
+                try:
+                    equipo_id = int(equipo_id)
+                except (ValueError, TypeError):
+                    errors.append(f"Fila {row_num}: Equipo ID '{equipo_id}' debe ser un número")
+                    continue
+                
+                # Verificar que el equipo existe
+                equipo = db.query(Equipo).filter(Equipo.id == equipo_id).first()
+                if not equipo:
+                    errors.append(f"Fila {row_num}: Equipo ID {equipo_id} no existe")
+                    continue
+                
+                # Verificar email duplicado en el archivo
+                if email in existing_emails:
+                    errors.append(f"Fila {row_num}: Email '{email}' está duplicado en el archivo")
+                    continue
+                existing_emails.add(email)
+                
+                # Verificar que el email no esté en uso en la base de datos
+                existing_tutor = db.query(Tutor).filter(Tutor.email == email).first()
+                if existing_tutor:
+                    errors.append(f"Fila {row_num}: Ya existe un tutor con email '{email}'")
+                    continue
+                
+                # Crear tutor
+                tutor_data = {
+                    "nombre": nombre,
+                    "apellido": apellido,
+                    "email": email,
+                    "equipo_id": equipo_id
+                }
+                
+                db_tutor = Tutor(**tutor_data)
+                db.add(db_tutor)
+                db.commit()
+                db.refresh(db_tutor)
+                created += 1
+                
+            except Exception as e:
+                db.rollback()
+                errors.append(f"Fila {row_num}: Error al procesar - {str(e)}")
+                continue
+        
+        return {
+            "message": f"Importación completada: {created} tutores creados",
+            "created": created,
+            "errors": errors,
+            "total_errors": len(errors)
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al procesar el archivo Excel: {str(e)}"
+        )

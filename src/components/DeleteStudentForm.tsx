@@ -22,7 +22,7 @@ const DeleteStudentForm: React.FC<DeleteStudentFormProps> = ({ students, onClose
   const [motivoDesercion, setMotivoDesercion] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const { token } = useAuth();
+  const { fetchWithAuth } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,13 +46,8 @@ const DeleteStudentForm: React.FC<DeleteStudentFormProps> = ({ students, onClose
     setError('');
 
     try {
-      const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
-      const response = await fetch(`${apiUrl}/estudiantes/${selectedStudentId}`, {
+      const response = await fetchWithAuth(`/estudiantes/${selectedStudentId}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           es_desercion: actionType === 'desercion',
           motivo_desercion: actionType === 'desercion' ? motivoDesercion.trim() : null

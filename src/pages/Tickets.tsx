@@ -30,7 +30,7 @@ interface Student {
 }
 
 const Tickets: React.FC = () => {
-  const { token, user } = useAuth();
+  const { fetchWithAuth, user } = useAuth();
   
   // Estados
   const [unidades, setUnidades] = useState<Unidad[]>([]);
@@ -51,16 +51,14 @@ const Tickets: React.FC = () => {
   ];
 
   useEffect(() => {
-    if (token) {
-      fetchInitialData();
-    }
-  }, [token, user]);
+    fetchInitialData();
+  }, [user]);
 
   useEffect(() => {
     if (selectedUnidad) {
       fetchTicketsData();
     }
-  }, [selectedUnidad, selectedEquipo, token]);
+  }, [selectedUnidad, selectedEquipo]);
 
   const fetchInitialData = async () => {
     try {
@@ -78,40 +76,26 @@ const Tickets: React.FC = () => {
   };
 
   const fetchUnidades = async () => {
-    const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
-    console.log('📚 Fetching unidades from:', apiUrl);
-    
-    const response = await fetch(`${apiUrl}/tickets/unidades`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
+    try {
+      const response = await fetchWithAuth('/tickets/unidades');
+      if (response.ok) {
+        const data = await response.json();
+        setUnidades(data.unidades);
       }
-    });
-    
-    console.log('📚 Unidades response status:', response.status);
-    
-    if (response.ok) {
-      const data = await response.json();
-      console.log('📚 Unidades data received:', data.unidades.length, 'unidades');
-      setUnidades(data.unidades);
-    } else {
-      console.error('❌ Error fetching unidades:', response.status);
+    } catch (error) {
+      console.error('Error fetching unidades:', error);
     }
   };
 
   const fetchEquipos = async () => {
-    const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
-    const response = await fetch(`${apiUrl}/tickets/equipos`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
+    try {
+      const response = await fetchWithAuth('/tickets/equipos');
+      if (response.ok) {
+        const data = await response.json();
+        setEquipos(data);
       }
-    });
-    
-    if (response.ok) {
-      const data = await response.json();
-      console.log('👥 Equipos data received:', data.length, 'equipos');
-      setEquipos(data);
+    } catch (error) {
+      console.error('Error fetching equipos:', error);
     }
   };
 
@@ -120,42 +104,24 @@ const Tickets: React.FC = () => {
     
     setLoading(true);
     try {
-      const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
-      
-      // Construir URL con parámetros
       const params = new URLSearchParams();
       params.append('unidad', selectedUnidad);
       if (selectedEquipo) params.append('equipo_id', selectedEquipo.toString());
       
-      const url = `${apiUrl}/tickets/students?${params.toString()}`;
-      console.log('🎫 Fetching tickets from:', url);
+      const url = `/tickets/students?${params.toString()}`;
       
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      console.log('🎫 Tickets response status:', response.status);
-      
-      if (response.status === 401) {
-        console.error('❌ Token expirado o inválido. Por favor, vuelve a iniciar sesión.');
-        return;
-      }
+      const response = await fetchWithAuth(url);
       
       if (response.ok) {
         const data = await response.json();
-        console.log('🎫 Tickets data received:', data.students.length, 'students');
         setStudents(data.students);
         setModulos(data.modulos);
       } else {
-        console.error('❌ Error fetching tickets:', response.status);
         setStudents([]);
         setModulos([]);
       }
     } catch (error) {
-      console.error('❌ Error fetching tickets:', error);
+      console.error('Error fetching tickets:', error);
       setStudents([]);
       setModulos([]);
     } finally {
@@ -165,14 +131,8 @@ const Tickets: React.FC = () => {
 
   const updateTicketStatus = async (studentId: number, modulo: string, newStatus: string) => {
     try {
-      const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
-      
-      const response = await fetch(`${apiUrl}/tickets/students`, {
+      const response = await fetchWithAuth('/tickets/students', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
         body: JSON.stringify({
           student_id: studentId,
           unidad: selectedUnidad,
@@ -223,15 +183,9 @@ const Tickets: React.FC = () => {
   const handleExportExcel = async () => {
     try {
       const XLSX = await import('xlsx');
-      const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
       
       // Obtener todos los tickets (sin filtros, respetando roles)
-      const response = await fetch(`${apiUrl}/tickets/export-all`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await fetchWithAuth('/tickets/export-all');
       
       if (!response.ok) {
         throw new Error(`Error al obtener tickets: ${response.status}`);

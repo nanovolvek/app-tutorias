@@ -19,6 +19,24 @@ def get_equipos(
     equipos = db.query(Equipo).join(Colegio, Equipo.colegio_id == Colegio.id, isouter=True).all()
     return equipos
 
+@router.get("/con-colegios/", response_model=List[dict])
+def get_equipos_con_colegios(
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_active_user)
+):
+    """Obtener todos los equipos con información de sus colegios (para importación)"""
+    equipos = db.query(Equipo).join(Colegio, Equipo.colegio_id == Colegio.id, isouter=True).all()
+    return [
+        {
+            "id": equipo.id,
+            "nombre": equipo.nombre,
+            "colegio_id": equipo.colegio_id,
+            "colegio_nombre": equipo.colegio.nombre if equipo.colegio else "Sin colegio",
+            "colegio_comuna": equipo.colegio.comuna if equipo.colegio else "Sin comuna"
+        }
+        for equipo in equipos
+    ]
+
 @router.get("/{equipo_id}", response_model=EquipoSchema)
 def get_equipo(
     equipo_id: int,

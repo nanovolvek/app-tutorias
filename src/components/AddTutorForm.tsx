@@ -17,7 +17,7 @@ interface AddTutorFormProps {
 }
 
 const AddTutorForm: React.FC<AddTutorFormProps> = ({ onSuccess, onClose, equipos }) => {
-  const { token } = useAuth();
+  const { fetchWithAuth } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
@@ -47,13 +47,8 @@ const AddTutorForm: React.FC<AddTutorFormProps> = ({ onSuccess, onClose, equipos
     setError('');
 
     try {
-      const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
-      const response = await fetch(`${apiUrl}/tutores/`, {
+      const response = await fetchWithAuth('/tutores/', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           ...formData,
           equipo_id: parseInt(formData.equipo_id)

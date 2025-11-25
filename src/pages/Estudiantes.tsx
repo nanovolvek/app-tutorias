@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import AddStudentForm from '../components/AddStudentForm';
 import DeleteStudentForm from '../components/DeleteStudentForm';
+import ImportStudentForm from '../components/ImportStudentForm';
 
 interface Equipo {
   id: number;
@@ -39,6 +40,7 @@ const Estudiantes: React.FC = () => {
   const [error, setError] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
   const [showDeleteForm, setShowDeleteForm] = useState(false);
+  const [showImportForm, setShowImportForm] = useState(false);
   const [attendanceStats, setAttendanceStats] = useState<any>(null);
   const { fetchWithAuth, user } = useAuth();
 
@@ -172,6 +174,12 @@ const Estudiantes: React.FC = () => {
             >
               📊 Exportar Excel
             </button>
+            <button 
+              className="btn btn-info" 
+              onClick={() => setShowImportForm(true)}
+            >
+              📥 Importar Excel
+            </button>
           </div>
         </div>
         
@@ -303,6 +311,13 @@ const Estudiantes: React.FC = () => {
             />
           </div>
         </div>
+      )}
+
+      {showImportForm && (
+        <ImportStudentForm
+          onSuccess={handleAddSuccess}
+          onClose={() => setShowImportForm(false)}
+        />
       )}
     </div>
   );

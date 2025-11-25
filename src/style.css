@@ -622,6 +622,16 @@ ul, ol {
   transform: translateY(-1px);
 }
 
+.btn-info {
+  background: #0ea5e9;
+  color: white;
+}
+
+.btn-info:hover {
+  background: #0284c7;
+  transform: translateY(-1px);
+}
+
 .warning-message {
   background: #fef3c7;
   border: 1px solid #f59e0b;

@@ -34,7 +34,7 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({ onClose, onSuccess, use
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [rutError, setRutError] = useState('');
-  const { token } = useAuth();
+  const { fetchWithAuth } = useAuth();
 
   useEffect(() => {
     if (user?.rol === 'admin') {
@@ -44,14 +44,7 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({ onClose, onSuccess, use
 
   const fetchEquipos = async () => {
     try {
-      const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
-      const response = await fetch(`${apiUrl}/equipos/`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
+      const response = await fetchWithAuth('/equipos/');
       if (response.ok) {
         const data = await response.json();
         setEquipos(data);
@@ -100,13 +93,8 @@ const AddStudentForm: React.FC<AddStudentFormProps> = ({ onClose, onSuccess, use
     }
 
     try {
-      const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
-      const response = await fetch(`${apiUrl}/estudiantes/`, {
+      const response = await fetchWithAuth('/estudiantes/', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           ...formData,
           equipo_id: parseInt(formData.equipo_id.toString())

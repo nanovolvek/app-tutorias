@@ -18,7 +18,7 @@ interface DeleteTutorFormProps {
 }
 
 const DeleteTutorForm: React.FC<DeleteTutorFormProps> = ({ onSuccess, onClose, tutores }) => {
-  const { token } = useAuth();
+  const { fetchWithAuth } = useAuth();
   const [selectedTutorId, setSelectedTutorId] = useState('');
   const [actionType, setActionType] = useState<'desercion' | 'eliminar' | ''>('');
   const [motivoDesercion, setMotivoDesercion] = useState('');
@@ -47,13 +47,8 @@ const DeleteTutorForm: React.FC<DeleteTutorFormProps> = ({ onSuccess, onClose, t
     setError('');
 
     try {
-      const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
-      const response = await fetch(`${apiUrl}/tutores/${selectedTutorId}`, {
+      const response = await fetchWithAuth(`/tutores/${selectedTutorId}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           es_desercion: actionType === 'desercion',
           motivo_desercion: actionType === 'desercion' ? motivoDesercion.trim() : null

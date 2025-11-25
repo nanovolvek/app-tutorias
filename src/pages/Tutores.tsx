@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import AddTutorForm from '../components/AddTutorForm';
 import DeleteTutorForm from '../components/DeleteTutorForm';
+import ImportTutorForm from '../components/ImportTutorForm';
 
 interface Equipo {
   id: number;
@@ -34,6 +35,7 @@ const Tutores: React.FC = () => {
   const [error, setError] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
   const [showDeleteForm, setShowDeleteForm] = useState(false);
+  const [showImportForm, setShowImportForm] = useState(false);
 
   const fetchTutores = async () => {
     try {
@@ -198,6 +200,12 @@ const Tutores: React.FC = () => {
           >
             Exportar Excel
           </button>
+          <button 
+            className="btn btn-info" 
+            onClick={() => setShowImportForm(true)}
+          >
+            📥 Importar Excel
+          </button>
         </div>
       </div>
 
@@ -269,6 +277,13 @@ const Tutores: React.FC = () => {
           onSuccess={handleDeleteSuccess}
           onClose={() => setShowDeleteForm(false)}
           tutores={tutores}
+        />
+      )}
+
+      {showImportForm && (
+        <ImportTutorForm
+          onSuccess={handleAddSuccess}
+          onClose={() => setShowImportForm(false)}
         />
       )}
     </div>

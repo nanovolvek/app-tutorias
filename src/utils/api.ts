@@ -17,9 +17,13 @@ export async function fetchWithAuth(
 
   // Headers por defecto
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
     ...(fetchOptions.headers as Record<string, string>),
   };
+
+  // No establecer Content-Type si es FormData (el navegador lo hará con el boundary)
+  if (!(fetchOptions.body instanceof FormData)) {
+    headers['Content-Type'] = 'application/json';
+  }
 
   // Agregar token de autenticación si está disponible y no se omite
   if (!skipAuth && token) {
