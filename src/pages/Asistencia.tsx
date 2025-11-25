@@ -160,19 +160,21 @@ const Asistencia: React.FC = () => {
   const fetchEquipos = async () => {
     try {
       const response = await fetchWithAuth('/attendance-2026/equipos');
-    
-    console.log('👥 Equipos response status:', response.status);
-    
-    if (response.ok) {
-      const data = await response.json();
-      console.log('👥 Equipos data received:', data.length, 'equipos');
-      if (Array.isArray(data)) {
-        setEquipos(data);
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (Array.isArray(data)) {
+          setEquipos(data);
+        } else {
+          setEquipos([]);
+        }
       } else {
+        console.error('Error fetching equipos:', response.status);
         setEquipos([]);
       }
-    } else {
-      console.error('❌ Error fetching equipos:', response.status);
+    } catch (error) {
+      console.error('Error fetching equipos:', error);
+      setEquipos([]);
     }
   };
 
@@ -525,10 +527,6 @@ const Asistencia: React.FC = () => {
       alert('Error al exportar el archivo Excel. Por favor, intenta nuevamente.');
     }
   };
-
-  if (!token) {
-    return <div className="container">Por favor, inicia sesión para acceder a la asistencia.</div>;
-  }
 
   return (
     <div className="container">

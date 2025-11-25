@@ -40,21 +40,13 @@ const Estudiantes: React.FC = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showDeleteForm, setShowDeleteForm] = useState(false);
   const [attendanceStats, setAttendanceStats] = useState<any>(null);
-  const { token, user } = useAuth();
+  const { fetchWithAuth, user } = useAuth();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
-        
         // Cargar estudiantes
-        const studentsResponse = await fetch(`${apiUrl}/estudiantes/`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
+        const studentsResponse = await fetchWithAuth('/estudiantes/');
         if (studentsResponse.ok) {
           const studentsData = await studentsResponse.json();
           console.log('Estudiantes recibidos:', studentsData);
@@ -73,13 +65,7 @@ const Estudiantes: React.FC = () => {
         }
 
         // Cargar estadísticas de asistencia
-        const attendanceResponse = await fetch(`${apiUrl}/attendance/students/attendance-stats`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
+        const attendanceResponse = await fetchWithAuth('/attendance/students/attendance-stats');
         if (attendanceResponse.ok) {
           const attendanceData = await attendanceResponse.json();
           setAttendanceStats(attendanceData);
@@ -92,10 +78,8 @@ const Estudiantes: React.FC = () => {
       }
     };
 
-    if (token) {
-      fetchData();
-    }
-  }, [token, user]);
+    fetchData();
+  }, [user]);
 
   const getColegioNombre = (student: Student) => {
     return student.equipo?.colegio?.nombre || 'Sin colegio';

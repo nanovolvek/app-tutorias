@@ -82,34 +82,20 @@ const Dashboard: React.FC = () => {
   const [selectedView, setSelectedView] = useState<'estudiantes' | 'tutores'>('estudiantes');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const { token, user } = useAuth();
+  const { fetchWithAuth, user } = useAuth();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
-        
         // Cargar estudiantes
-        const estudiantesResponse = await fetch(`${apiUrl}/estudiantes/`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
+        const estudiantesResponse = await fetchWithAuth('/estudiantes/');
         if (estudiantesResponse.ok) {
           const estudiantesData = await estudiantesResponse.json();
           setEstudiantes(estudiantesData);
         }
 
         // Cargar tutores
-        const tutoresResponse = await fetch(`${apiUrl}/tutores/`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
+        const tutoresResponse = await fetchWithAuth('/tutores/');
         if (tutoresResponse.ok) {
           const tutoresData = await tutoresResponse.json();
           setTutores(tutoresData);
@@ -117,13 +103,7 @@ const Dashboard: React.FC = () => {
 
         // Cargar equipos (solo si es admin)
         if (user?.rol === 'admin') {
-          const equiposResponse = await fetch(`${apiUrl}/equipos/`, {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-          });
-
+          const equiposResponse = await fetchWithAuth('/equipos/');
           if (equiposResponse.ok) {
             const equiposData = await equiposResponse.json();
             setEquipos(equiposData);
@@ -131,42 +111,29 @@ const Dashboard: React.FC = () => {
         }
 
         // Cargar estadísticas de asistencia de estudiantes
-        const attendanceResponse = await fetch(`${apiUrl}/attendance/students/attendance-stats`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
+        const attendanceResponse = await fetchWithAuth('/attendance/students/attendance-stats');
         if (attendanceResponse.ok) {
           const attendanceData = await attendanceResponse.json();
           setAttendanceStats(attendanceData);
         }
 
         // Cargar estadísticas de asistencia de tutores
-        const tutorAttendanceResponse = await fetch(`${apiUrl}/attendance/tutors/attendance-stats`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
+        const tutorAttendanceResponse = await fetchWithAuth('/attendance/tutors/attendance-stats');
         if (tutorAttendanceResponse.ok) {
           const tutorAttendanceData = await tutorAttendanceResponse.json();
           setTutorAttendanceStats(tutorAttendanceData);
         }
 
       } catch (err) {
+        console.error('Error cargando datos:', err);
         setError('Error de conexión al cargar datos');
       } finally {
         setLoading(false);
       }
     };
 
-    if (token) {
-      fetchData();
-    }
-  }, [token, user]);
+    fetchData();
+  }, [user]);
 
   // Filtrar estadísticas de asistencia de estudiantes por equipo cuando cambien los estudiantes
   useEffect(() => {
