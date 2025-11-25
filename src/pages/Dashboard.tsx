@@ -231,7 +231,7 @@ const Dashboard: React.FC = () => {
         <>
           {/* Estadísticas generales - más compactas */}
           <div className="stats-section">
-            <div className="stats-grid-horizontal">
+            <div className={`stats-grid-top ${user?.rol === 'admin' ? 'stats-grid-three' : 'stats-grid-two'}`}>
               <div className="stat-card-compact">
                 <h3>Estudiantes</h3>
                 <p className="stat-number">{estudiantes.length}</p>
@@ -240,6 +240,13 @@ const Dashboard: React.FC = () => {
                 )}
               </div>
               
+              {user?.rol === 'admin' && (
+                <div className="stat-card-compact">
+                  <h3>Equipos</h3>
+                  <p className="stat-number">{equipos.length}</p>
+                </div>
+              )}
+              
               <div className="stat-card-compact">
                 <h3>Tutores</h3>
                 <p className="stat-number">{tutores.length}</p>
@@ -247,19 +254,12 @@ const Dashboard: React.FC = () => {
                   <p className="stat-detail">en tu equipo</p>
                 )}
               </div>
-
-              {user?.rol === 'admin' && (
-                <div className="stat-card-compact">
-                  <h3>Equipos</h3>
-                  <p className="stat-number">{equipos.length}</p>
-                </div>
-              )}
             </div>
           </div>
 
           {/* Promedios de Asistencia - juntos */}
           <div className="attendance-stats-compact">
-            <div className="stats-grid-horizontal">
+            <div className="stats-grid-pair">
               {filteredAttendanceStats && (
                 <div className="attendance-card-small">
                   <h3>Promedio % Asistencia Estudiantes</h3>
@@ -288,7 +288,7 @@ const Dashboard: React.FC = () => {
 
           {/* Inasistencias - juntos */}
           <div className="attendance-stats-compact">
-            <div className="stats-grid-horizontal">
+            <div className="stats-grid-pair">
               {filteredAttendanceStats && (
                 <div className="warning-card-small">
                   <h3>+3 Inasistencias Estudiantes</h3>
