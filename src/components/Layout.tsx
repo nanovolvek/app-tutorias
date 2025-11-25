@@ -20,6 +20,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       { path: '/estudiantes', label: 'Estudiantes', icon: '👥' },
       { path: '/asistencia', label: 'Asistencia', icon: '✅' },
       { path: '/tickets', label: 'Tickets', icon: '🎫' },
+      { path: '/prueba-diagnostico', label: 'Prueba Diagnóstico', icon: '📊' },
+      { path: '/prueba-unidad', label: 'Prueba Unidad', icon: '📈' },
       { path: '/material-apoyo', label: 'Material de Apoyo', icon: '📚' },
     ];
 

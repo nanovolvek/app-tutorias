@@ -7,6 +7,8 @@ import Estudiantes from './pages/Estudiantes';
 import Tutores from './pages/Tutores';
 import Asistencia from './pages/Asistencia';
 import Tickets from './pages/Tickets';
+import PruebaDiagnostico from './pages/PruebaDiagnostico';
+import PruebaUnidad from './pages/PruebaUnidad';
 import MaterialApoyo from './pages/MaterialApoyo';
 
 function AppContent() {
@@ -57,6 +59,8 @@ function AppContent() {
         <Route path="/tutores" element={<Tutores />} />
         <Route path="/asistencia" element={<Asistencia />} />
         <Route path="/tickets" element={<Tickets />} />
+        <Route path="/prueba-diagnostico" element={<PruebaDiagnostico />} />
+        <Route path="/prueba-unidad" element={<PruebaUnidad />} />
         <Route path="/material-apoyo" element={<MaterialApoyo />} />
       </Routes>
     </Layout>
