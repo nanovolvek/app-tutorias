@@ -143,7 +143,7 @@ const Dashboard: React.FC = () => {
     };
 
     fetchData();
-  }, [user]);
+  }, [user, fetchWithAuth]);
 
   // Filtrar estadísticas de asistencia de estudiantes por equipo cuando cambien los estudiantes
   useEffect(() => {
