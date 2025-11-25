@@ -86,7 +86,7 @@ const Dashboard: React.FC = () => {
   const [error, setError] = useState('');
   const { fetchWithAuth, user } = useAuth();
 
-  const fetchEquipos = async () => {
+  const fetchEquipos = React.useCallback(async () => {
     if (user?.rol === 'admin') {
       try {
         const equiposResponse = await fetchWithAuth('/equipos/');
@@ -98,7 +98,7 @@ const Dashboard: React.FC = () => {
         console.error('Error al cargar equipos:', err);
       }
     }
-  };
+  }, [user, fetchWithAuth]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -221,11 +221,11 @@ const Dashboard: React.FC = () => {
     return equipo?.colegio?.nombre || 'Sin colegio';
   };
 
-  const handleCreateSuccess = () => {
+  const handleCreateSuccess = React.useCallback(() => {
     // Recargar equipos y colegios
     fetchEquipos();
     setShowCreateSchoolTeamForm(false);
-  };
+  }, [fetchEquipos]);
 
   return (
     <div className="page-container">
