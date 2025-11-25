@@ -221,9 +221,26 @@ const Dashboard: React.FC = () => {
     return equipo?.colegio?.nombre || 'Sin colegio';
   };
 
+  const handleCreateSuccess = () => {
+    // Recargar equipos y colegios
+    fetchEquipos();
+    setShowCreateSchoolTeamForm(false);
+  };
+
   return (
     <div className="page-container">
-      <h1 className="page-title">Dashboard</h1>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+        <h1 className="page-title" style={{ margin: 0 }}>Dashboard</h1>
+        {user?.rol === 'admin' && (
+          <button
+            className="btn btn-primary"
+            onClick={() => setShowCreateSchoolTeamForm(true)}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+          >
+            ➕ Crear Colegio y Equipo
+          </button>
+        )}
+      </div>
 
       {loading && (
         <div className="loading">
