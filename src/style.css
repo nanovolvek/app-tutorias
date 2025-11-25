@@ -200,12 +200,61 @@ ul, ol {
   flex-wrap: wrap;
 }
 
-.stats-grid-top {
-  display: flex;
+/* Primera fila: Estudiantes (izq), Equipos (centro), Tutores (der) */
+.stats-grid-top-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   gap: 16px;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
+  align-items: start;
+  margin-bottom: 24px;
+}
+
+.stats-grid-top-row:has(.stat-card-center) {
+  grid-template-columns: 1fr auto 1fr;
+}
+
+.stat-card-students {
+  justify-self: start;
+  width: 220px;
+}
+
+.stat-card-center {
+  justify-self: center;
+  width: 220px;
+}
+
+.stat-card-tutors {
+  justify-self: end;
+  width: 220px;
+}
+
+.stat-card-compact {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  text-align: center;
+}
+
+/* Segunda y tercera fila: Dos columnas (Estudiantes izq, Tutores der) */
+.stats-grid-two-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+  margin-bottom: 24px;
+}
+
+.attendance-card-students,
+.warning-card-students {
+  justify-self: start;
+  width: 300px;
+}
+
+.attendance-card-tutors,
+.warning-card-tutors {
+  justify-self: end;
+  width: 300px;
 }
 
 .stats-grid-two {
@@ -232,16 +281,6 @@ ul, ol {
   flex-wrap: wrap;
 }
 
-.stat-card-compact {
-  background: white;
-  border-radius: 8px;
-  padding: 16px;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-  width: 100%;
-  max-width: 220px;
-  text-align: center;
-}
-
 .stat-card-compact h3 {
   font-size: 0.9rem;
   color: #64748b;
@@ -263,8 +302,6 @@ ul, ol {
 
 /* Estilos para estadísticas de asistencia compactas */
 .attendance-stats-compact {
-  display: flex;
-  justify-content: center;
   margin-bottom: 24px;
 }
 
@@ -273,9 +310,6 @@ ul, ol {
   color: white;
   border-radius: 8px;
   padding: 16px;
-  flex: 0 1 300px;
-  min-width: 250px;
-  max-width: 350px;
   text-align: center;
 }
 
@@ -284,9 +318,6 @@ ul, ol {
   color: white;
   border-radius: 8px;
   padding: 16px;
-  flex: 0 1 300px;
-  min-width: 250px;
-  max-width: 350px;
   text-align: center;
 }
 
@@ -706,6 +737,27 @@ ul, ol {
   
   .stats-grid-horizontal {
     flex-direction: column;
+  }
+  
+  .stats-grid-top-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .stats-grid-two-columns {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .stat-card-students,
+  .stat-card-center,
+  .stat-card-tutors,
+  .attendance-card-students,
+  .attendance-card-tutors,
+  .warning-card-students,
+  .warning-card-tutors {
+    width: 100%;
+    justify-self: stretch;
   }
   
   .stats-grid-top,

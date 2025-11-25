@@ -229,10 +229,10 @@ const Dashboard: React.FC = () => {
 
       {!loading && !error && (
         <>
-          {/* Estadísticas generales - más compactas */}
+          {/* Estadísticas generales - Primera fila: Estudiantes, Equipos (centro), Tutores */}
           <div className="stats-section">
-            <div className={`stats-grid-top ${user?.rol === 'admin' ? 'stats-grid-three' : 'stats-grid-two'}`}>
-              <div className="stat-card-compact">
+            <div className="stats-grid-top-row">
+              <div className="stat-card-compact stat-card-students">
                 <h3>Estudiantes</h3>
                 <p className="stat-number">{estudiantes.length}</p>
                 {user?.rol === 'tutor' && (
@@ -241,13 +241,13 @@ const Dashboard: React.FC = () => {
               </div>
               
               {user?.rol === 'admin' && (
-                <div className="stat-card-compact">
+                <div className="stat-card-compact stat-card-center">
                   <h3>Equipos</h3>
                   <p className="stat-number">{equipos.length}</p>
                 </div>
               )}
               
-              <div className="stat-card-compact">
+              <div className="stat-card-compact stat-card-tutors">
                 <h3>Tutores</h3>
                 <p className="stat-number">{tutores.length}</p>
                 {user?.rol === 'tutor' && (
@@ -257,11 +257,11 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* Promedios de Asistencia - juntos */}
+          {/* Promedios de Asistencia - Segunda fila: Estudiantes (izq), Tutores (der) */}
           <div className="attendance-stats-compact">
-            <div className="stats-grid-pair">
+            <div className="stats-grid-two-columns">
               {filteredAttendanceStats && (
-                <div className="attendance-card-small">
+                <div className="attendance-card-small attendance-card-students">
                   <h3>Promedio % Asistencia Estudiantes</h3>
                   <p className="stat-number-small">
                     {filteredAttendanceStats.overall_average}%
@@ -273,7 +273,7 @@ const Dashboard: React.FC = () => {
               )}
               
               {filteredTutorAttendanceStats && (
-                <div className="attendance-card-small">
+                <div className="attendance-card-small attendance-card-tutors">
                   <h3>Promedio % Asistencia Tutores</h3>
                   <p className="stat-number-small">
                     {filteredTutorAttendanceStats.overall_average}%
@@ -286,11 +286,11 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* Inasistencias - juntos */}
+          {/* Inasistencias - Tercera fila: Estudiantes (izq), Tutores (der) */}
           <div className="attendance-stats-compact">
-            <div className="stats-grid-pair">
+            <div className="stats-grid-two-columns">
               {filteredAttendanceStats && (
-                <div className="warning-card-small">
+                <div className="warning-card-small warning-card-students">
                   <h3>+3 Inasistencias Estudiantes</h3>
                   <p className="stat-number-small">
                     {filteredAttendanceStats.students_with_3_plus_absences.length}
@@ -300,7 +300,7 @@ const Dashboard: React.FC = () => {
               )}
               
               {filteredTutorAttendanceStats && (
-                <div className="warning-card-small">
+                <div className="warning-card-small warning-card-tutors">
                   <h3>+3 Inasistencias Tutores</h3>
                   <p className="stat-number-small">
                     {filteredTutorAttendanceStats.tutors_with_3_plus_absences.length}
