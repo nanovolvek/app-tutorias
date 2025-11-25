@@ -19,6 +19,8 @@ interface Tutor {
   apellido: string;
   email: string;
   equipo_id: number;
+  activo?: boolean;
+  motivo_desercion?: string;
   created_at: string;
   equipo?: Equipo;
 }
@@ -103,7 +105,7 @@ const Tutores: React.FC = () => {
       // Preparar datos para Excel
       const excelData = [
         // Encabezados
-        ['Nombre Completo', 'Email', 'Equipo', 'Colegio', 'Comuna', 'Fecha Registro'],
+        ['Nombre Completo', 'Email', 'Equipo', 'Colegio', 'Comuna', 'Activo', 'Motivo Deserción', 'Fecha Registro'],
         // Tutores
         ...tutores.map(tutor => [
           `${tutor.nombre} ${tutor.apellido}`,
@@ -111,6 +113,8 @@ const Tutores: React.FC = () => {
           tutor.equipo?.nombre || 'Sin equipo',
           getColegioNombre(tutor),
           getComunaNombre(tutor),
+          tutor.activo !== false ? 'Sí' : 'No',
+          tutor.motivo_desercion || 'N/A',
           new Date(tutor.created_at).toLocaleDateString('es-ES')
         ])
       ];
@@ -193,12 +197,14 @@ const Tutores: React.FC = () => {
               <th>Equipo</th>
               <th>Colegio</th>
               <th>Comuna</th>
+              <th>Activo</th>
+              <th>Motivo Deserción</th>
             </tr>
           </thead>
           <tbody>
             {tutores.length === 0 ? (
               <tr>
-                <td colSpan={5} className="text-center">
+                <td colSpan={7} className="text-center">
                   No hay tutores registrados
                 </td>
               </tr>
@@ -210,6 +216,19 @@ const Tutores: React.FC = () => {
                   <td>{tutor.equipo?.nombre || 'Sin equipo'}</td>
                   <td>{getColegioNombre(tutor)}</td>
                   <td>{getComunaNombre(tutor)}</td>
+                  <td>
+                    <span style={{
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      fontSize: '0.85rem',
+                      fontWeight: '600',
+                      backgroundColor: tutor.activo !== false ? '#dcfce7' : '#fee2e2',
+                      color: tutor.activo !== false ? '#166534' : '#991b1b'
+                    }}>
+                      {tutor.activo !== false ? 'Sí' : 'No'}
+                    </span>
+                  </td>
+                  <td>{tutor.motivo_desercion || 'N/A'}</td>
                 </tr>
               ))
             )}

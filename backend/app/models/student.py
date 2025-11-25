@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.database import Base
@@ -15,6 +15,8 @@ class Estudiante(Base):
     nombre_apoderado = Column(String, nullable=True)  # Nombre del apoderado
     contacto_apoderado = Column(String, nullable=True)  # Contacto del apoderado (teléfono/email)
     observaciones = Column(String, nullable=True)  # Observaciones
+    activo = Column(Boolean, nullable=False, default=True)  # Estado activo/inactivo (deserción)
+    motivo_desercion = Column(String, nullable=True)  # Motivo de deserción si aplica
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     

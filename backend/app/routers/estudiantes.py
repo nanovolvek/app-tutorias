@@ -1,11 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Body
 from sqlalchemy.orm import Session, joinedload
 from typing import List
 from app.database import get_db
 from app.models.student import Estudiante
 from app.models.equipo import Equipo
 from app.models.school import Colegio
-from app.schemas.estudiante import Estudiante as EstudianteSchema, EstudianteCreate
+from app.schemas.estudiante import Estudiante as EstudianteSchema, EstudianteCreate, EstudianteDeleteRequest
+from app.models.attendance import AsistenciaEstudiante
+from app.models.tickets import TicketEstudiante
 from app.auth.dependencies import get_current_active_user, get_admin_user, get_tutor_user
 
 router = APIRouter(prefix="/estudiantes", tags=["estudiantes"])
@@ -112,10 +114,11 @@ def create_estudiante(
 @router.delete("/{estudiante_id}")
 def delete_estudiante(
     estudiante_id: int,
+    delete_request: EstudianteDeleteRequest = Body(...),
     db: Session = Depends(get_db),
     current_user = Depends(get_current_active_user)
 ):
-    """Eliminar un estudiante (eliminación física)"""
+    """Eliminar un estudiante o marcarlo como desertor"""
     estudiante = db.query(Estudiante).filter(Estudiante.id == estudiante_id).first()
     if not estudiante:
         raise HTTPException(
@@ -130,8 +133,25 @@ def delete_estudiante(
             detail="Solo puedes eliminar estudiantes de tu equipo"
         )
     
-    # Eliminar físicamente
-    db.delete(estudiante)
-    db.commit()
-    
-    return {"message": "Estudiante eliminado exitosamente"}
+    if delete_request.es_desercion:
+        # Marcar como desertor (eliminación lógica)
+        if not delete_request.motivo_desercion:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="El motivo de deserción es requerido"
+            )
+        estudiante.activo = False
+        estudiante.motivo_desercion = delete_request.motivo_desercion
+        db.commit()
+        db.refresh(estudiante)
+        return {"message": "Estudiante marcado como desertor exitosamente"}
+    else:
+        # Eliminación física completa - eliminar todos los registros relacionados
+        # Eliminar registros de asistencia
+        db.query(AsistenciaEstudiante).filter(AsistenciaEstudiante.estudiante_id == estudiante_id).delete()
+        # Eliminar registros de tickets
+        db.query(TicketEstudiante).filter(TicketEstudiante.estudiante_id == estudiante_id).delete()
+        # Eliminar el estudiante
+        db.delete(estudiante)
+        db.commit()
+        return {"message": "Estudiante eliminado completamente de la base de datos"}

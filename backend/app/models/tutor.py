@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.database import Base
@@ -11,6 +11,8 @@ class Tutor(Base):
     apellido = Column(String, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
     equipo_id = Column(Integer, ForeignKey("equipos.id"), nullable=False)
+    activo = Column(Boolean, nullable=False, default=True)  # Estado activo/inactivo (deserción)
+    motivo_desercion = Column(String, nullable=True)  # Motivo de deserción si aplica
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     

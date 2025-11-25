@@ -1,11 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Body
 from sqlalchemy.orm import Session, joinedload
 from typing import List
 from app.database import get_db
 from app.models.tutor import Tutor
 from app.models.equipo import Equipo
 from app.models.school import Colegio
-from app.schemas.tutor import Tutor as TutorSchema, TutorCreate
+from app.schemas.tutor import Tutor as TutorSchema, TutorCreate, TutorDeleteRequest
+from app.models.attendance import AsistenciaTutor
 from app.auth.dependencies import get_current_active_user, get_admin_user, get_tutor_user
 
 router = APIRouter(prefix="/tutores", tags=["tutores"])
@@ -105,10 +106,11 @@ def create_tutor(
 @router.delete("/{tutor_id}")
 def delete_tutor(
     tutor_id: int,
+    delete_request: TutorDeleteRequest = Body(...),
     db: Session = Depends(get_db),
     current_user = Depends(get_admin_user)
 ):
-    """Eliminar un tutor (solo administradores)"""
+    """Eliminar un tutor o marcarlo como desertor (solo administradores)"""
     tutor = db.query(Tutor).filter(Tutor.id == tutor_id).first()
     if not tutor:
         raise HTTPException(
@@ -116,8 +118,23 @@ def delete_tutor(
             detail="Tutor no encontrado"
         )
     
-    # Eliminar físicamente
-    db.delete(tutor)
-    db.commit()
-    
-    return {"message": "Tutor eliminado exitosamente"}
+    if delete_request.es_desercion:
+        # Marcar como desertor (eliminación lógica)
+        if not delete_request.motivo_desercion:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="El motivo de deserción es requerido"
+            )
+        tutor.activo = False
+        tutor.motivo_desercion = delete_request.motivo_desercion
+        db.commit()
+        db.refresh(tutor)
+        return {"message": "Tutor marcado como desertor exitosamente"}
+    else:
+        # Eliminación física completa - eliminar todos los registros relacionados
+        # Eliminar registros de asistencia
+        db.query(AsistenciaTutor).filter(AsistenciaTutor.tutor_id == tutor_id).delete()
+        # Eliminar el tutor
+        db.delete(tutor)
+        db.commit()
+        return {"message": "Tutor eliminado completamente de la base de datos"}

@@ -25,6 +25,8 @@ interface Student {
   nombre_apoderado?: string;
   contacto_apoderado?: string;
   observaciones?: string;
+  activo?: boolean;
+  motivo_desercion?: string;
   equipo: Equipo;
   created_at: string;
   updated_at?: string;
@@ -122,8 +124,8 @@ const Estudiantes: React.FC = () => {
       // Preparar datos para Excel
       const excelData = [
         // Encabezados
-        ['RUT', 'Nombre Completo', 'Curso', 'Equipo', 'Colegio', 'Comuna', '% Asistencia', 'Apoderado', 'Contacto', 'Observaciones', 'Fecha Registro'],
-        // Estudiantes activos
+        ['RUT', 'Nombre Completo', 'Curso', 'Equipo', 'Colegio', 'Comuna', '% Asistencia', 'Activo', 'Motivo Deserción', 'Apoderado', 'Contacto', 'Observaciones', 'Fecha Registro'],
+        // Estudiantes
         ...students.map(student => [
           student.rut,
           `${student.nombre} ${student.apellido}`,
@@ -132,6 +134,8 @@ const Estudiantes: React.FC = () => {
           getColegioNombre(student),
           getComunaNombre(student),
           `${getAttendancePercentage(student).toFixed(1)}%`,
+          student.activo !== false ? 'Sí' : 'No',
+          student.motivo_desercion || 'N/A',
           student.nombre_apoderado || 'N/A',
           student.contacto_apoderado || 'N/A',
           student.observaciones || 'N/A',
@@ -217,6 +221,8 @@ const Estudiantes: React.FC = () => {
                   <th>Colegio</th>
                   <th>Comuna</th>
                   <th>% Asistencia</th>
+                  <th>Activo</th>
+                  <th>Motivo Deserción</th>
                   <th>Apoderado</th>
                   <th>Contacto</th>
                   <th>Observaciones</th>
@@ -237,6 +243,19 @@ const Estudiantes: React.FC = () => {
                       <td className={`attendance-cell ${getAttendanceColor(attendancePercentage)}`}>
                         {attendancePercentage.toFixed(1)}%
                       </td>
+                      <td>
+                        <span style={{
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          fontSize: '0.85rem',
+                          fontWeight: '600',
+                          backgroundColor: student.activo !== false ? '#dcfce7' : '#fee2e2',
+                          color: student.activo !== false ? '#166534' : '#991b1b'
+                        }}>
+                          {student.activo !== false ? 'Sí' : 'No'}
+                        </span>
+                      </td>
+                      <td>{student.motivo_desercion || 'N/A'}</td>
                       <td>{student.nombre_apoderado || 'N/A'}</td>
                       <td>{student.contacto_apoderado || 'N/A'}</td>
                       <td className="observations-cell">{student.observaciones || 'N/A'}</td>

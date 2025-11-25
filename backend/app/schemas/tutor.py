@@ -23,9 +23,15 @@ class TutorCreate(TutorBase):
 
 class Tutor(TutorBase):
     id: int
+    activo: bool = True
+    motivo_desercion: Optional[str] = None
     equipo: Optional[EquipoInfo] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
     
     class Config:
         from_attributes = True
+
+class TutorDeleteRequest(BaseModel):
+    es_desercion: bool  # True si desertó, False si está mal creado
+    motivo_desercion: Optional[str] = None  # Requerido si es_desercion es True

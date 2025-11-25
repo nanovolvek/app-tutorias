@@ -29,9 +29,15 @@ class EquipoInfo(BaseModel):
 
 class Estudiante(EstudianteBase):
     id: int
+    activo: bool = True
+    motivo_desercion: Optional[str] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
     equipo: Optional[EquipoInfo] = None
     
     class Config:
         from_attributes = True
+
+class EstudianteDeleteRequest(BaseModel):
+    es_desercion: bool  # True si desertó, False si está mal creado
+    motivo_desercion: Optional[str] = None  # Requerido si es_desercion es True
