@@ -220,16 +220,112 @@ const Tickets: React.FC = () => {
     return unidad?.nombre || 'Unidad';
   };
 
+  const handleExportExcel = async () => {
+    try {
+      const XLSX = await import('xlsx');
+      const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
+      
+      // Obtener todos los tickets (sin filtros, respetando roles)
+      const response = await fetch(`${apiUrl}/tickets/export-all`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error al obtener tickets: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      const tickets = data.tickets || [];
+      
+      // Preparar datos para Excel
+      const excelData: any[] = [
+        ['RUT', 'Nombre', 'Apellido', 'Curso', 'Equipo', 'Colegio', 'Unidad', 'Módulo', 'Resultado', 'Fecha Creación', 'Fecha Actualización']
+      ];
+      
+      tickets.forEach((ticket: any) => {
+        excelData.push([
+          ticket.rut || 'N/A',
+          ticket.nombre || 'N/A',
+          ticket.apellido || 'N/A',
+          ticket.curso || 'N/A',
+          ticket.equipo_nombre || 'Sin equipo',
+          ticket.colegio_nombre || 'Sin colegio',
+          ticket.unidad_nombre || ticket.unidad || 'N/A',
+          ticket.modulo_nombre || ticket.modulo || 'N/A',
+          ticket.resultado || 'vacío',
+          ticket.created_at ? new Date(ticket.created_at).toLocaleString('es-CL') : 'N/A',
+          ticket.updated_at ? new Date(ticket.updated_at).toLocaleString('es-CL') : 'N/A'
+        ]);
+      });
+      
+      // Crear libro de Excel
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet(excelData);
+      
+      // Ajustar ancho de columnas
+      const colWidths = [
+        { wch: 15 }, // RUT
+        { wch: 15 }, // Nombre
+        { wch: 15 }, // Apellido
+        { wch: 12 }, // Curso
+        { wch: 20 }, // Equipo
+        { wch: 25 }, // Colegio
+        { wch: 12 }, // Unidad
+        { wch: 20 }, // Módulo
+        { wch: 12 }, // Resultado
+        { wch: 20 }, // Fecha Creación
+        { wch: 20 }  // Fecha Actualización
+      ];
+      ws['!cols'] = colWidths;
+      
+      XLSX.utils.book_append_sheet(wb, ws, 'Tickets');
+      
+      // Descargar archivo
+      const fileName = `tickets_${new Date().toISOString().split('T')[0]}.xlsx`;
+      XLSX.writeFile(wb, fileName);
+      
+      alert(`Excel exportado exitosamente. Total de registros: ${tickets.length}`);
+      
+    } catch (error) {
+      console.error('Error al exportar Excel:', error);
+      alert('Error al exportar el archivo Excel. Por favor, intenta nuevamente.');
+    }
+  };
+
   return (
     <div className="page-container">
       <div className="tickets-header">
-        <h1 className="page-title">🎫 Sistema de Tickets</h1>
-        <p className="page-description">
-          Sistema de seguimiento de tickets por unidad y módulo. 
-          Los tutores pueden gestionar los tickets de sus estudiantes.
-        </p>
-        <div className="status-indicator">
-          ✅ CONECTADO - Datos reales de la base de datos
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <div>
+            <h1 className="page-title">🎫 Sistema de Tickets</h1>
+            <p className="page-description">
+              Sistema de seguimiento de tickets por unidad y módulo. 
+              Los tutores pueden gestionar los tickets de sus estudiantes.
+            </p>
+            <div className="status-indicator">
+              ✅ CONECTADO - Datos reales de la base de datos
+            </div>
+          </div>
+          <button
+            onClick={handleExportExcel}
+            className="btn btn-success"
+            style={{
+              padding: '0.5rem 1rem',
+              backgroundColor: '#10B981',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '0.9rem',
+              fontWeight: '500',
+              height: 'fit-content'
+            }}
+          >
+            📊 Exportar Excel
+          </button>
         </div>
       </div>
 

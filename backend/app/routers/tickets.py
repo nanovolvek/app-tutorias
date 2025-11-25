@@ -186,6 +186,76 @@ def get_equipos_list(
         print(f"Error en get_equipos_list: {e}")
         raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
 
+@router.get("/export-all")
+def get_all_tickets_for_export(
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """Obtener todos los tickets para exportación a Excel (respetando roles)"""
+    try:
+        # Construir query base de estudiantes
+        query = db.query(Estudiante).join(Equipo).join(Colegio)
+        
+        # Aplicar filtros según el rol del usuario
+        if current_user.rol == 'tutor':
+            # Tutor solo ve estudiantes de su equipo
+            query = query.filter(Estudiante.equipo_id == current_user.equipo_id)
+        
+        estudiantes = query.all()
+        
+        # Obtener todos los tickets de todos los estudiantes
+        all_tickets_data = []
+        
+        # Crear un mapa de tickets existentes por estudiante
+        tickets_map = {}
+        all_tickets = db.query(TicketEstudiante).all()
+        for ticket in all_tickets:
+            if ticket.estudiante_id not in tickets_map:
+                tickets_map[ticket.estudiante_id] = []
+            tickets_map[ticket.estudiante_id].append(ticket)
+        
+        # Para cada estudiante, generar entradas para todas las unidades y módulos
+        for estudiante in estudiantes:
+            estudiante_tickets = tickets_map.get(estudiante.id, [])
+            tickets_dict = {(t.unidad, t.modulo): t for t in estudiante_tickets}
+            
+            # Generar todas las combinaciones de unidad y módulo
+            for unidad_key, modulos in MODULOS_DATA.items():
+                unidad_nombre = f"Unidad {unidad_key.split('_')[1]}"
+                for modulo in modulos:
+                    ticket_key = (unidad_key, modulo["modulo_key"])
+                    ticket = tickets_dict.get(ticket_key)
+                    
+                    all_tickets_data.append({
+                        "estudiante_id": estudiante.id,
+                        "rut": estudiante.rut,
+                        "nombre": estudiante.nombre,
+                        "apellido": estudiante.apellido,
+                        "curso": estudiante.curso,
+                        "equipo_id": estudiante.equipo_id,
+                        "equipo_nombre": estudiante.equipo.nombre if estudiante.equipo else "Sin equipo",
+                        "colegio_id": estudiante.equipo.colegio_id if estudiante.equipo else None,
+                        "colegio_nombre": estudiante.equipo.colegio.nombre if estudiante.equipo and estudiante.equipo.colegio else "Sin colegio",
+                        "unidad": unidad_key,
+                        "unidad_nombre": unidad_nombre,
+                        "modulo": modulo["modulo_key"],
+                        "modulo_nombre": modulo["nombre"],
+                        "resultado": ticket.resultado.value if ticket and ticket.resultado else "vacío",
+                        "created_at": ticket.created_at.isoformat() if ticket and ticket.created_at else None,
+                        "updated_at": ticket.updated_at.isoformat() if ticket and ticket.updated_at else None
+                    })
+        
+        return {
+            "tickets": all_tickets_data,
+            "total": len(all_tickets_data)
+        }
+        
+    except Exception as e:
+        print(f"Error en get_all_tickets_for_export: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
+
 @router.post("/students")
 def update_student_ticket(
     request: TicketUpdateRequest,
