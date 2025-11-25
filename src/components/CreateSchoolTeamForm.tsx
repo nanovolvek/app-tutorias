@@ -3,7 +3,8 @@ import { useAuth } from '../contexts/AuthContext';
 
 interface Colegio {
   id: number;
-  nombre: string;
+  nombre?: string;
+  name?: string; // Por si viene con alias
   comuna: string;
 }
 
@@ -38,7 +39,10 @@ const CreateSchoolTeamForm: React.FC<CreateSchoolTeamFormProps> = ({ onSuccess, 
       const response = await fetchWithAuth('/schools/');
       if (response.ok) {
         const data = await response.json();
+        console.log('Colegios recibidos:', data); // Debug
         setColegios(data);
+      } else {
+        console.error('Error al cargar colegios:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('Error al cargar colegios:', error);
@@ -260,11 +264,18 @@ const CreateSchoolTeamForm: React.FC<CreateSchoolTeamFormProps> = ({ onSuccess, 
                   style={{ width: '100%', padding: '8px', border: '1px solid #d1d5db', borderRadius: '4px' }}
                 >
                   <option value="">Sin colegio</option>
-                  {colegios.map((colegio) => (
-                    <option key={colegio.id} value={colegio.id}>
-                      {colegio.nombre} - {colegio.comuna}
-                    </option>
-                  ))}
+                  {colegios.length > 0 ? (
+                    colegios.map((colegio) => {
+                      const nombre = colegio.nombre || colegio.name || 'Sin nombre';
+                      return (
+                        <option key={colegio.id} value={colegio.id}>
+                          {nombre} - {colegio.comuna}
+                        </option>
+                      );
+                    })
+                  ) : (
+                    <option disabled>No hay colegios disponibles</option>
+                  )}
                 </select>
                 <small style={{ color: '#6b7280', fontSize: '0.85rem', marginTop: '4px', display: 'block' }}>
                   Puedes crear el equipo sin asignarlo a un colegio ahora

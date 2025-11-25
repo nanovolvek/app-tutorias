@@ -3,11 +3,8 @@ from typing import Optional
 from datetime import datetime
 
 class SchoolBase(BaseModel):
-    nombre: str = Field(..., alias="name", description="Nombre del colegio")
+    nombre: str
     comuna: str
-
-    class Config:
-        populate_by_name = True
 
 class SchoolCreate(BaseModel):
     nombre: str
