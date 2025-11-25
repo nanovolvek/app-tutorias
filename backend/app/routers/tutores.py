@@ -17,18 +17,29 @@ def get_tutores(
     current_user = Depends(get_current_active_user)
 ):
     """Obtener tutores según el rol del usuario"""
-    if current_user.rol == "admin":
-        # Admin puede ver todos los tutores
-        tutores = db.query(Tutor).options(
-            joinedload(Tutor.equipo).joinedload(Equipo.colegio)
-        ).all()
-    else:
-        # Tutor solo puede ver tutores de su equipo
-        tutores = db.query(Tutor).options(
-            joinedload(Tutor.equipo).joinedload(Equipo.colegio)
-        ).filter(Tutor.equipo_id == current_user.equipo_id).all()
-    
-    return tutores
+    try:
+        if current_user.rol == "admin":
+            # Admin puede ver todos los tutores
+            tutores = db.query(Tutor).options(
+                joinedload(Tutor.equipo).joinedload(Equipo.colegio)
+            ).all()
+        else:
+            # Tutor solo puede ver tutores de su equipo
+            tutores = db.query(Tutor).options(
+                joinedload(Tutor.equipo).joinedload(Equipo.colegio)
+            ).filter(Tutor.equipo_id == current_user.equipo_id).all()
+        
+        # Asegurar que activo tenga un valor por defecto si es None
+        for tutor in tutores:
+            if tutor.activo is None:
+                tutor.activo = True
+        
+        return tutores
+    except Exception as e:
+        print(f"Error en get_tutores: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error al obtener tutores: {str(e)}")
 
 @router.get("/{tutor_id}", response_model=TutorSchema)
 def get_tutor(

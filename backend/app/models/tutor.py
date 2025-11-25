@@ -11,7 +11,7 @@ class Tutor(Base):
     apellido = Column(String, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
     equipo_id = Column(Integer, ForeignKey("equipos.id"), nullable=False)
-    activo = Column(Boolean, nullable=False, default=True)  # Estado activo/inactivo (deserción)
+    activo = Column(Boolean, nullable=True, default=True, server_default='true')  # Estado activo/inactivo (deserción)
     motivo_desercion = Column(String, nullable=True)  # Motivo de deserción si aplica
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

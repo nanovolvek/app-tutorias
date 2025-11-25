@@ -18,18 +18,29 @@ def get_estudiantes(
     current_user = Depends(get_current_active_user)
 ):
     """Obtener estudiantes según el rol del usuario"""
-    if current_user.rol == "admin":
-        # Admin puede ver todos los estudiantes
-        estudiantes = db.query(Estudiante).options(
-            joinedload(Estudiante.equipo).joinedload(Equipo.colegio)
-        ).all()
-    else:
-        # Tutor solo puede ver estudiantes de su equipo
-        estudiantes = db.query(Estudiante).options(
-            joinedload(Estudiante.equipo).joinedload(Equipo.colegio)
-        ).filter(Estudiante.equipo_id == current_user.equipo_id).all()
-    
-    return estudiantes
+    try:
+        if current_user.rol == "admin":
+            # Admin puede ver todos los estudiantes
+            estudiantes = db.query(Estudiante).options(
+                joinedload(Estudiante.equipo).joinedload(Equipo.colegio)
+            ).all()
+        else:
+            # Tutor solo puede ver estudiantes de su equipo
+            estudiantes = db.query(Estudiante).options(
+                joinedload(Estudiante.equipo).joinedload(Equipo.colegio)
+            ).filter(Estudiante.equipo_id == current_user.equipo_id).all()
+        
+        # Asegurar que activo tenga un valor por defecto si es None
+        for estudiante in estudiantes:
+            if estudiante.activo is None:
+                estudiante.activo = True
+        
+        return estudiantes
+    except Exception as e:
+        print(f"Error en get_estudiantes: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error al obtener estudiantes: {str(e)}")
 
 @router.get("/{estudiante_id}", response_model=EstudianteSchema)
 def get_estudiante(
