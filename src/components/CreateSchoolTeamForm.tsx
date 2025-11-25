@@ -14,7 +14,7 @@ interface CreateSchoolTeamFormProps {
 
 const CreateSchoolTeamForm: React.FC<CreateSchoolTeamFormProps> = ({ onSuccess, onClose }) => {
   const { fetchWithAuth } = useAuth();
-  const [step, setStep] = useState<'school' | 'team'>('school');
+  const [activeTab, setActiveTab] = useState<'school' | 'team'>('school');
   const [colegios, setColegios] = useState<Colegio[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -71,12 +71,13 @@ const CreateSchoolTeamForm: React.FC<CreateSchoolTeamFormProps> = ({ onSuccess, 
         setSchoolNombre('');
         setSchoolComuna('');
         await fetchColegios();
-        // Opcional: seleccionar el colegio recién creado
-        setSelectedColegioId(newSchool.id);
+        // Opcional: seleccionar el colegio recién creado si estamos en la pestaña de equipo
+        if (activeTab === 'team') {
+          setSelectedColegioId(newSchool.id);
+        }
         setTimeout(() => {
-          setStep('team');
           setSuccessMessage('');
-        }, 1500);
+        }, 2000);
       } else {
         const data = await response.json();
         setError(data.detail || 'Error al crear el colegio');
@@ -117,9 +118,9 @@ const CreateSchoolTeamForm: React.FC<CreateSchoolTeamFormProps> = ({ onSuccess, 
         setTeamDescripcion('');
         setSelectedColegioId('');
         setTimeout(() => {
-          onSuccess();
-          onClose();
-        }, 1500);
+          setSuccessMessage('');
+          // No cerrar automáticamente, permitir crear más
+        }, 2000);
       } else {
         const data = await response.json();
         setError(data.detail || 'Error al crear el equipo');
@@ -141,28 +142,50 @@ const CreateSchoolTeamForm: React.FC<CreateSchoolTeamFormProps> = ({ onSuccess, 
         </div>
 
         <div className="modal-body">
-          {/* Indicador de pasos */}
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', justifyContent: 'center' }}>
-            <div style={{
-              padding: '8px 16px',
-              borderRadius: '4px',
-              backgroundColor: step === 'school' ? '#3b82f6' : '#10b981',
-              color: 'white',
-              fontWeight: '600',
-              fontSize: '0.9rem'
-            }}>
-              1. Colegio
-            </div>
-            <div style={{
-              padding: '8px 16px',
-              borderRadius: '4px',
-              backgroundColor: step === 'team' ? '#3b82f6' : '#e5e7eb',
-              color: step === 'team' ? 'white' : '#6b7280',
-              fontWeight: '600',
-              fontSize: '0.9rem'
-            }}>
-              2. Equipo
-            </div>
+          {/* Pestañas para seleccionar qué crear */}
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', borderBottom: '2px solid #e5e7eb' }}>
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab('school');
+                setError('');
+                setSuccessMessage('');
+              }}
+              style={{
+                padding: '12px 24px',
+                border: 'none',
+                borderBottom: activeTab === 'school' ? '3px solid #3b82f6' : '3px solid transparent',
+                backgroundColor: 'transparent',
+                color: activeTab === 'school' ? '#3b82f6' : '#6b7280',
+                fontWeight: activeTab === 'school' ? '600' : '400',
+                fontSize: '1rem',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              Crear Colegio
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab('team');
+                setError('');
+                setSuccessMessage('');
+              }}
+              style={{
+                padding: '12px 24px',
+                border: 'none',
+                borderBottom: activeTab === 'team' ? '3px solid #3b82f6' : '3px solid transparent',
+                backgroundColor: 'transparent',
+                color: activeTab === 'team' ? '#3b82f6' : '#6b7280',
+                fontWeight: activeTab === 'team' ? '600' : '400',
+                fontSize: '1rem',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              Crear Equipo
+            </button>
           </div>
 
           {error && (
@@ -177,7 +200,7 @@ const CreateSchoolTeamForm: React.FC<CreateSchoolTeamFormProps> = ({ onSuccess, 
             </div>
           )}
 
-          {step === 'school' ? (
+          {activeTab === 'school' ? (
             <form onSubmit={handleCreateSchool}>
               <div className="form-group">
                 <label htmlFor="school-nombre">Nombre del Colegio *</label>
@@ -212,14 +235,14 @@ const CreateSchoolTeamForm: React.FC<CreateSchoolTeamFormProps> = ({ onSuccess, 
                   disabled={loading}
                   className="btn btn-secondary"
                 >
-                  Cancelar
+                  Cerrar
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
                   className="btn btn-primary"
                 >
-                  {loading ? 'Creando...' : 'Crear Colegio y Continuar'}
+                  {loading ? 'Creando...' : 'Crear Colegio'}
                 </button>
               </div>
             </form>
@@ -277,23 +300,11 @@ const CreateSchoolTeamForm: React.FC<CreateSchoolTeamFormProps> = ({ onSuccess, 
               <div className="form-actions">
                 <button
                   type="button"
-                  onClick={() => {
-                    setStep('school');
-                    setError('');
-                    setSuccessMessage('');
-                  }}
-                  disabled={loading}
-                  className="btn btn-secondary"
-                >
-                  ← Volver
-                </button>
-                <button
-                  type="button"
                   onClick={onClose}
                   disabled={loading}
                   className="btn btn-secondary"
                 >
-                  Cancelar
+                  Cerrar
                 </button>
                 <button
                   type="submit"
