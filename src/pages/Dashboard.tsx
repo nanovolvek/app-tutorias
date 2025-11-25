@@ -257,10 +257,10 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* Estadísticas de Asistencia - más compactas */}
+          {/* Promedios de Asistencia - juntos */}
           <div className="attendance-stats-compact">
-            {filteredAttendanceStats && (
-              <>
+            <div className="stats-grid-horizontal">
+              {filteredAttendanceStats && (
                 <div className="attendance-card-small">
                   <h3>Promedio % Asistencia Estudiantes</h3>
                   <p className="stat-number-small">
@@ -270,28 +270,45 @@ const Dashboard: React.FC = () => {
                     {filteredAttendanceStats.total_students} estudiantes
                   </p>
                 </div>
-                
+              )}
+              
+              {filteredTutorAttendanceStats && (
+                <div className="attendance-card-small">
+                  <h3>Promedio % Asistencia Tutores</h3>
+                  <p className="stat-number-small">
+                    {filteredTutorAttendanceStats.overall_average}%
+                  </p>
+                  <p className="stat-detail-small">
+                    {filteredTutorAttendanceStats.total_tutors} tutores
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Inasistencias - juntos */}
+          <div className="attendance-stats-compact">
+            <div className="stats-grid-horizontal">
+              {filteredAttendanceStats && (
                 <div className="warning-card-small">
-                  <h3>+3 Inasistencias</h3>
+                  <h3>+3 Inasistencias Estudiantes</h3>
                   <p className="stat-number-small">
                     {filteredAttendanceStats.students_with_3_plus_absences.length}
                   </p>
                   <p className="stat-detail-small">requieren atención</p>
                 </div>
-              </>
-            )}
-            
-            {filteredTutorAttendanceStats && (
-              <div className="attendance-card-small">
-                <h3>Promedio % Asistencia Tutores</h3>
-                <p className="stat-number-small">
-                  {filteredTutorAttendanceStats.overall_average}%
-                </p>
-                <p className="stat-detail-small">
-                  {filteredTutorAttendanceStats.total_tutors} tutores
-                </p>
-              </div>
-            )}
+              )}
+              
+              {filteredTutorAttendanceStats && (
+                <div className="warning-card-small">
+                  <h3>+3 Inasistencias Tutores</h3>
+                  <p className="stat-number-small">
+                    {filteredTutorAttendanceStats.tutors_with_3_plus_absences.length}
+                  </p>
+                  <p className="stat-detail-small">requieren atención</p>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Selector de vista y contenido condicional */}
