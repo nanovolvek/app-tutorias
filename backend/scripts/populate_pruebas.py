@@ -94,13 +94,13 @@ def populate_pruebas():
         
         db.commit()
         
-        print(f"✅ Pruebas de diagnóstico creadas: {pruebas_diagnostico_creadas}")
-        print(f"✅ Pruebas de unidad creadas: {pruebas_unidad_creadas}")
-        print("✅ Datos de prueba poblados exitosamente")
+        print(f"Pruebas de diagnostico creadas: {pruebas_diagnostico_creadas}")
+        print(f"Pruebas de unidad creadas: {pruebas_unidad_creadas}")
+        print("Datos de prueba poblados exitosamente")
         
     except Exception as e:
         db.rollback()
-        print(f"❌ Error al poblar datos: {e}")
+        print(f"Error al poblar datos: {e}")
         import traceback
         traceback.print_exc()
     finally:
