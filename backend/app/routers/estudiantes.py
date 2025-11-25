@@ -311,11 +311,32 @@ async def import_estudiantes(
                     "observaciones": observaciones if observaciones else None
                 }
                 
-                db_estudiante = Estudiante(**estudiante_data)
-                db.add(db_estudiante)
-                db.commit()
-                db.refresh(db_estudiante)
-                created += 1
+                try:
+                    db_estudiante = Estudiante(**estudiante_data)
+                    db.add(db_estudiante)
+                    db.commit()
+                    db.refresh(db_estudiante)
+                    created += 1
+                except Exception as e:
+                    db.rollback()
+                    # Si hay error de ID duplicado, intentar obtener el siguiente ID disponible
+                    if "llave duplicada" in str(e) or "duplicate key" in str(e) or "UniqueViolation" in str(e):
+                        try:
+                            # Obtener el máximo ID actual
+                            max_id = db.query(Estudiante).order_by(Estudiante.id.desc()).first()
+                            next_id = (max_id.id + 1) if max_id else 1
+                            
+                            # Crear el estudiante con ID explícito
+                            db_estudiante = Estudiante(id=next_id, **estudiante_data)
+                            db.add(db_estudiante)
+                            db.commit()
+                            db.refresh(db_estudiante)
+                            created += 1
+                        except Exception as e2:
+                            db.rollback()
+                            errors.append(f"Fila {row_num}: Error al crear estudiante (ID duplicado y fallo al corregir) - {str(e2)}")
+                    else:
+                        errors.append(f"Fila {row_num}: Error al procesar - {str(e)}")
                 
             except Exception as e:
                 db.rollback()

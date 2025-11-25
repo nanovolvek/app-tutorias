@@ -273,11 +273,32 @@ async def import_tutores(
                     "equipo_id": equipo_id
                 }
                 
-                db_tutor = Tutor(**tutor_data)
-                db.add(db_tutor)
-                db.commit()
-                db.refresh(db_tutor)
-                created += 1
+                try:
+                    db_tutor = Tutor(**tutor_data)
+                    db.add(db_tutor)
+                    db.commit()
+                    db.refresh(db_tutor)
+                    created += 1
+                except Exception as e:
+                    db.rollback()
+                    # Si hay error de ID duplicado, intentar obtener el siguiente ID disponible
+                    if "llave duplicada" in str(e) or "duplicate key" in str(e) or "UniqueViolation" in str(e):
+                        try:
+                            # Obtener el máximo ID actual
+                            max_id = db.query(Tutor).order_by(Tutor.id.desc()).first()
+                            next_id = (max_id.id + 1) if max_id else 1
+                            
+                            # Crear el tutor con ID explícito
+                            db_tutor = Tutor(id=next_id, **tutor_data)
+                            db.add(db_tutor)
+                            db.commit()
+                            db.refresh(db_tutor)
+                            created += 1
+                        except Exception as e2:
+                            db.rollback()
+                            errors.append(f"Fila {row_num}: Error al crear tutor (ID duplicado y fallo al corregir) - {str(e2)}")
+                    else:
+                        errors.append(f"Fila {row_num}: Error al procesar - {str(e)}")
                 
             except Exception as e:
                 db.rollback()
