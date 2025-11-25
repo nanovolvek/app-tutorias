@@ -26,9 +26,10 @@ interface Tutor {
 }
 
 const Tutores: React.FC = () => {
-  const { token } = useAuth();
+  const { fetchWithAuth } = useAuth();
   const [tutores, setTutores] = useState<Tutor[]>([]);
   const [equipos, setEquipos] = useState<Equipo[]>([]);
+  const [attendanceStats, setAttendanceStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
@@ -36,14 +37,7 @@ const Tutores: React.FC = () => {
 
   const fetchTutores = async () => {
     try {
-      const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
-      const response = await fetch(`${apiUrl}/tutores/`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
+      const response = await fetchWithAuth('/tutores/');
       if (response.ok) {
         const data = await response.json();
         setTutores(data);
@@ -58,16 +52,21 @@ const Tutores: React.FC = () => {
     }
   };
 
+  const fetchAttendanceStats = async () => {
+    try {
+      const response = await fetchWithAuth('/attendance/tutors/attendance-stats');
+      if (response.ok) {
+        const data = await response.json();
+        setAttendanceStats(data);
+      }
+    } catch (error) {
+      console.error('Error al cargar estadísticas de asistencia:', error);
+    }
+  };
+
   const fetchEquipos = async () => {
     try {
-      const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
-      const response = await fetch(`${apiUrl}/equipos/`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
+      const response = await fetchWithAuth('/equipos/');
       if (response.ok) {
         const data = await response.json();
         setEquipos(data);
@@ -80,7 +79,20 @@ const Tutores: React.FC = () => {
   useEffect(() => {
     fetchTutores();
     fetchEquipos();
+    fetchAttendanceStats();
   }, []);
+
+  const getAttendancePercentage = (tutor: Tutor) => {
+    if (!attendanceStats) return 0;
+    const tutorStats = attendanceStats.tutors_stats.find((t: any) => t.tutor_id === tutor.id);
+    return tutorStats ? tutorStats.attendance_percentage : 0;
+  };
+
+  const getAttendanceColor = (percentage: number) => {
+    if (percentage >= 80) return 'attendance-high';
+    if (percentage >= 60) return 'attendance-medium';
+    return 'attendance-low';
+  };
 
   const handleAddSuccess = () => {
     fetchTutores();
@@ -105,7 +117,7 @@ const Tutores: React.FC = () => {
       // Preparar datos para Excel
       const excelData = [
         // Encabezados
-        ['Nombre Completo', 'Email', 'Equipo', 'Colegio', 'Comuna', 'Activo', 'Motivo Deserción', 'Fecha Registro'],
+        ['Nombre Completo', 'Email', 'Equipo', 'Colegio', 'Comuna', '% Asistencia', 'Activo', 'Motivo Deserción', 'Fecha Registro'],
         // Tutores
         ...tutores.map(tutor => [
           `${tutor.nombre} ${tutor.apellido}`,
@@ -113,6 +125,7 @@ const Tutores: React.FC = () => {
           tutor.equipo?.nombre || 'Sin equipo',
           getColegioNombre(tutor),
           getComunaNombre(tutor),
+          `${getAttendancePercentage(tutor).toFixed(1)}%`,
           tutor.activo !== false ? 'Sí' : 'No',
           tutor.motivo_desercion || 'N/A',
           new Date(tutor.created_at).toLocaleDateString('es-ES')
@@ -197,6 +210,7 @@ const Tutores: React.FC = () => {
               <th>Equipo</th>
               <th>Colegio</th>
               <th>Comuna</th>
+              <th>% Asistencia</th>
               <th>Activo</th>
               <th>Motivo Deserción</th>
             </tr>
@@ -204,33 +218,39 @@ const Tutores: React.FC = () => {
           <tbody>
             {tutores.length === 0 ? (
               <tr>
-                <td colSpan={7} className="text-center">
+                <td colSpan={8} className="text-center">
                   No hay tutores registrados
                 </td>
               </tr>
             ) : (
-              tutores.map((tutor) => (
-                <tr key={tutor.id}>
-                  <td>{tutor.nombre} {tutor.apellido}</td>
-                  <td>{tutor.email}</td>
-                  <td>{tutor.equipo?.nombre || 'Sin equipo'}</td>
-                  <td>{getColegioNombre(tutor)}</td>
-                  <td>{getComunaNombre(tutor)}</td>
-                  <td>
-                    <span style={{
-                      padding: '4px 8px',
-                      borderRadius: '4px',
-                      fontSize: '0.85rem',
-                      fontWeight: '600',
-                      backgroundColor: tutor.activo !== false ? '#dcfce7' : '#fee2e2',
-                      color: tutor.activo !== false ? '#166534' : '#991b1b'
-                    }}>
-                      {tutor.activo !== false ? 'Sí' : 'No'}
-                    </span>
-                  </td>
-                  <td>{tutor.motivo_desercion || 'N/A'}</td>
-                </tr>
-              ))
+              tutores.map((tutor) => {
+                const attendancePercentage = getAttendancePercentage(tutor);
+                return (
+                  <tr key={tutor.id}>
+                    <td>{tutor.nombre} {tutor.apellido}</td>
+                    <td>{tutor.email}</td>
+                    <td>{tutor.equipo?.nombre || 'Sin equipo'}</td>
+                    <td>{getColegioNombre(tutor)}</td>
+                    <td>{getComunaNombre(tutor)}</td>
+                    <td className={`attendance-cell ${getAttendanceColor(attendancePercentage)}`}>
+                      {attendancePercentage.toFixed(1)}%
+                    </td>
+                    <td>
+                      <span style={{
+                        padding: '4px 8px',
+                        borderRadius: '4px',
+                        fontSize: '0.85rem',
+                        fontWeight: '600',
+                        backgroundColor: tutor.activo !== false ? '#dcfce7' : '#fee2e2',
+                        color: tutor.activo !== false ? '#166534' : '#991b1b'
+                      }}>
+                        {tutor.activo !== false ? 'Sí' : 'No'}
+                      </span>
+                    </td>
+                    <td>{tutor.motivo_desercion || 'N/A'}</td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
