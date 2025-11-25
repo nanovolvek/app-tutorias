@@ -86,6 +86,20 @@ const Dashboard: React.FC = () => {
   const [error, setError] = useState('');
   const { fetchWithAuth, user } = useAuth();
 
+  const fetchEquipos = async () => {
+    if (user?.rol === 'admin') {
+      try {
+        const equiposResponse = await fetchWithAuth('/equipos/');
+        if (equiposResponse.ok) {
+          const equiposData = await equiposResponse.json();
+          setEquipos(equiposData);
+        }
+      } catch (err) {
+        console.error('Error al cargar equipos:', err);
+      }
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -104,13 +118,7 @@ const Dashboard: React.FC = () => {
         }
 
         // Cargar equipos (solo si es admin)
-        if (user?.rol === 'admin') {
-          const equiposResponse = await fetchWithAuth('/equipos/');
-          if (equiposResponse.ok) {
-            const equiposData = await equiposResponse.json();
-            setEquipos(equiposData);
-          }
-        }
+        await fetchEquipos();
 
         // Cargar estadísticas de asistencia de estudiantes
         const attendanceResponse = await fetchWithAuth('/attendance/students/attendance-stats');
