@@ -19,42 +19,52 @@ class TicketUpdateRequest(BaseModel):
     modulo: str
     resultado: str
 
-# Datos de módulos por unidad (5 módulos por cada una de las 5 unidades)
+# Datos de módulos por unidad con nombres reales
+# Nota: Los modulo_key se mantienen como modulo_1, modulo_2, etc. para cada unidad
+# para mantener compatibilidad con datos existentes en la base de datos
 MODULOS_DATA = {
     "unidad_1": [
-        {"modulo_key": "modulo_1", "nombre": "Módulo 1", "descripcion": "Fundamentos básicos"},
-        {"modulo_key": "modulo_2", "nombre": "Módulo 2", "descripcion": "Conceptos intermedios"},
-        {"modulo_key": "modulo_3", "nombre": "Módulo 3", "descripcion": "Aplicaciones prácticas"},
-        {"modulo_key": "modulo_4", "nombre": "Módulo 4", "descripcion": "Análisis avanzado"},
-        {"modulo_key": "modulo_5", "nombre": "Módulo 5", "descripcion": "Síntesis y evaluación"}
+        {"modulo_key": "modulo_1", "nombre": "Módulo 1", "descripcion": "Adicción de N° Naturales"},
+        {"modulo_key": "modulo_2", "nombre": "Módulo 2", "descripcion": "Sustracción de N° Naturales"},
+        {"modulo_key": "modulo_3", "nombre": "Módulo 3", "descripcion": "Multiplicación de N° Naturales"},
+        {"modulo_key": "modulo_4", "nombre": "Módulo 4", "descripcion": "División de N° Naturales"},
+        {"modulo_key": "modulo_5", "nombre": "Módulo 5", "descripcion": "Operatoria Combinada de N° Naturales"}
     ],
     "unidad_2": [
-        {"modulo_key": "modulo_1", "nombre": "Módulo 1", "descripcion": "Fundamentos básicos"},
-        {"modulo_key": "modulo_2", "nombre": "Módulo 2", "descripcion": "Conceptos intermedios"},
-        {"modulo_key": "modulo_3", "nombre": "Módulo 3", "descripcion": "Aplicaciones prácticas"},
-        {"modulo_key": "modulo_4", "nombre": "Módulo 4", "descripcion": "Análisis avanzado"},
-        {"modulo_key": "modulo_5", "nombre": "Módulo 5", "descripcion": "Síntesis y evaluación"}
+        {"modulo_key": "modulo_1", "nombre": "Módulo 6", "descripcion": "Adicción de N° Enteros"},
+        {"modulo_key": "modulo_2", "nombre": "Módulo 7", "descripcion": "Sustracción de N° Enteros"},
+        {"modulo_key": "modulo_3", "nombre": "Módulo 8", "descripcion": "Multiplicación y división de N° Enteros"},
+        {"modulo_key": "modulo_4", "nombre": "Módulo 9", "descripcion": "Operatoria Combinada de N° Enteros"},
+        {"modulo_key": "modulo_5", "nombre": "Módulo 10", "descripcion": "Resolución de Problemas de N° Enteros"}
     ],
     "unidad_3": [
-        {"modulo_key": "modulo_1", "nombre": "Módulo 1", "descripcion": "Fundamentos básicos"},
-        {"modulo_key": "modulo_2", "nombre": "Módulo 2", "descripcion": "Conceptos intermedios"},
-        {"modulo_key": "modulo_3", "nombre": "Módulo 3", "descripcion": "Aplicaciones prácticas"},
-        {"modulo_key": "modulo_4", "nombre": "Módulo 4", "descripcion": "Análisis avanzado"},
-        {"modulo_key": "modulo_5", "nombre": "Módulo 5", "descripcion": "Síntesis y evaluación"}
+        {"modulo_key": "modulo_1", "nombre": "Módulo 11", "descripcion": "Conceptos Claves de Fracciones"},
+        {"modulo_key": "modulo_2", "nombre": "Módulo 12", "descripcion": "Suma y Resta de Fracciones"},
+        {"modulo_key": "modulo_3", "nombre": "Módulo 13", "descripcion": "Multiplicación de Fracciones"},
+        {"modulo_key": "modulo_4", "nombre": "Módulo 14", "descripcion": "División de Fracciones"},
+        {"modulo_key": "modulo_5", "nombre": "Módulo 15", "descripcion": "Suma y Resta de Decimales"},
+        {"modulo_key": "modulo_6", "nombre": "Módulo 16", "descripcion": "Multiplicación de Decimales"},
+        {"modulo_key": "modulo_7", "nombre": "Módulo 17", "descripcion": "División de Decimales"},
+        {"modulo_key": "modulo_8", "nombre": "Módulo 18", "descripcion": "Conjuntos Numéricos"},
+        {"modulo_key": "modulo_9", "nombre": "Módulo 19", "descripcion": "Operatoria Combinada de N° Racionales"},
+        {"modulo_key": "modulo_10", "nombre": "Módulo 20", "descripcion": "Resolución de Problemas de N° Racionales"}
     ],
     "unidad_4": [
-        {"modulo_key": "modulo_1", "nombre": "Módulo 1", "descripcion": "Fundamentos básicos"},
-        {"modulo_key": "modulo_2", "nombre": "Módulo 2", "descripcion": "Conceptos intermedios"},
-        {"modulo_key": "modulo_3", "nombre": "Módulo 3", "descripcion": "Aplicaciones prácticas"},
-        {"modulo_key": "modulo_4", "nombre": "Módulo 4", "descripcion": "Análisis avanzado"},
-        {"modulo_key": "modulo_5", "nombre": "Módulo 5", "descripcion": "Síntesis y evaluación"}
+        {"modulo_key": "modulo_1", "nombre": "Módulo 21", "descripcion": "Conceptos Claves de %"},
+        {"modulo_key": "modulo_2", "nombre": "Módulo 22", "descripcion": "Cálculo de % más directos"},
+        {"modulo_key": "modulo_3", "nombre": "Módulo 23", "descripcion": "Cálculo de cualquier %"},
+        {"modulo_key": "modulo_4", "nombre": "Módulo 24", "descripcion": "Resolución de Problemas de % 1"},
+        {"modulo_key": "modulo_5", "nombre": "Módulo 25", "descripcion": "Resolución de Problemas de % 2"}
     ],
     "unidad_5": [
-        {"modulo_key": "modulo_1", "nombre": "Módulo 1", "descripcion": "Fundamentos básicos"},
-        {"modulo_key": "modulo_2", "nombre": "Módulo 2", "descripcion": "Conceptos intermedios"},
-        {"modulo_key": "modulo_3", "nombre": "Módulo 3", "descripcion": "Aplicaciones prácticas"},
-        {"modulo_key": "modulo_4", "nombre": "Módulo 4", "descripcion": "Análisis avanzado"},
-        {"modulo_key": "modulo_5", "nombre": "Módulo 5", "descripcion": "Síntesis y evaluación"}
+        {"modulo_key": "modulo_1", "nombre": "Módulo 26", "descripcion": "Conceptos Claves de Raíces"},
+        {"modulo_key": "modulo_2", "nombre": "Módulo 27", "descripcion": "Cálculo de Raíces"},
+        {"modulo_key": "modulo_3", "nombre": "Módulo 28", "descripcion": "Propiedades de Raíces"},
+        {"modulo_key": "modulo_4", "nombre": "Módulo 29", "descripcion": "Resolución de Problemas de Raíces"},
+        {"modulo_key": "modulo_5", "nombre": "Módulo 30", "descripcion": "Conceptos Claves de Potencias"},
+        {"modulo_key": "modulo_6", "nombre": "Módulo 31", "descripcion": "Cálculo de Potencias"},
+        {"modulo_key": "modulo_7", "nombre": "Módulo 32", "descripcion": "Propiedades de Potencias"},
+        {"modulo_key": "modulo_8", "nombre": "Módulo 33", "descripcion": "Resolución de Problemas de Potencias"}
     ]
 }
 
