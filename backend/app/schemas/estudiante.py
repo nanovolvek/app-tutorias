@@ -29,7 +29,7 @@ class EquipoInfo(BaseModel):
 
 class Estudiante(EstudianteBase):
     id: int
-    activo: bool = True
+    activo: Optional[bool] = True  # Opcional para tolerar valores faltantes
     motivo_desercion: Optional[str] = None
     created_at: datetime
     updated_at: Optional[datetime] = None

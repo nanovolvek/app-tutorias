@@ -23,7 +23,7 @@ class TutorCreate(TutorBase):
 
 class Tutor(TutorBase):
     id: int
-    activo: bool = True
+    activo: Optional[bool] = True  # Opcional para tolerar valores faltantes
     motivo_desercion: Optional[str] = None
     equipo: Optional[EquipoInfo] = None
     created_at: datetime
