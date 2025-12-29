@@ -213,7 +213,7 @@ const Tutores: React.FC = () => {
         <table className="data-table">
           <thead>
             <tr>
-              <th>Nombre Completo</th>
+              <th className="sticky-col-1">Nombre Completo</th>
               <th>Email</th>
               <th>Equipo</th>
               <th>Colegio</th>
@@ -235,7 +235,7 @@ const Tutores: React.FC = () => {
                 const attendancePercentage = getAttendancePercentage(tutor);
                 return (
                   <tr key={tutor.id}>
-                    <td>{tutor.nombre} {tutor.apellido}</td>
+                    <td className="sticky-col-1">{tutor.nombre} {tutor.apellido}</td>
                     <td>{tutor.email}</td>
                     <td>{tutor.equipo?.nombre || 'Sin equipo'}</td>
                     <td>{getColegioNombre(tutor)}</td>

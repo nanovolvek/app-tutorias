@@ -440,6 +440,47 @@ ul, ol {
   border-bottom: none;
 }
 
+/* Columnas sticky para tablas */
+.data-table th.sticky-col-1,
+.data-table td.sticky-col-1 {
+  position: sticky;
+  left: 0;
+  z-index: 10;
+  background-color: white;
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+  min-width: 120px;
+  width: 120px;
+}
+
+.data-table thead th.sticky-col-1 {
+  background-color: #f8fafc;
+  z-index: 11;
+}
+
+.data-table tbody tr:hover td.sticky-col-1 {
+  background-color: #f9fafb;
+}
+
+.data-table th.sticky-col-2,
+.data-table td.sticky-col-2 {
+  position: sticky;
+  left: 120px; /* Ancho de la columna RUT */
+  z-index: 10;
+  background-color: white;
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+  min-width: 200px;
+  width: 200px;
+}
+
+.data-table thead th.sticky-col-2 {
+  background-color: #f8fafc;
+  z-index: 11;
+}
+
+.data-table tbody tr:hover td.sticky-col-2 {
+  background-color: #f9fafb;
+}
+
 /* Estilos para botones de acción */
 .section-header {
   display: flex;

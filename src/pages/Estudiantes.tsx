@@ -216,8 +216,8 @@ const Estudiantes: React.FC = () => {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>RUT</th>
-                  <th>Nombre Completo</th>
+                  <th className="sticky-col-1">RUT</th>
+                  <th className="sticky-col-2">Nombre Completo</th>
                   <th>Curso</th>
                   <th>Equipo</th>
                   <th>Colegio</th>
@@ -236,8 +236,8 @@ const Estudiantes: React.FC = () => {
                   const attendancePercentage = getAttendancePercentage(student);
                   return (
                     <tr key={student.id}>
-                      <td className="rut-cell">{student.rut}</td>
-                      <td className="name-cell">{student.nombre} {student.apellido}</td>
+                      <td className="rut-cell sticky-col-1">{student.rut}</td>
+                      <td className="name-cell sticky-col-2">{student.nombre} {student.apellido}</td>
                       <td>{student.curso}</td>
                       <td>{student.equipo?.nombre || 'Sin equipo'}</td>
                       <td>{getColegioNombre(student)}</td>
