@@ -1060,6 +1060,20 @@ ul, ol {
 
 /* Responsive para gráficos */
 @media (max-width: 768px) {
+  /* Ocultar todas las tablas en móvil */
+  .table-container,
+  .tickets-table-container,
+  .attendance-table-container {
+    display: none !important;
+  }
+
+  /* Mostrar cards móviles */
+  .mobile-cards-container,
+  .tickets-mobile-cards-container,
+  .attendance-mobile-cards-container {
+    display: block !important;
+  }
+
   .chart-container {
     padding: 16px;
   }

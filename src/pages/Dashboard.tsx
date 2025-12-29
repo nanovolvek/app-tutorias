@@ -429,28 +429,60 @@ const Dashboard: React.FC = () => {
               <div className="students-section">
                 <h2 className="section-title">Estudiantes</h2>
                 {estudiantes.length > 0 ? (
-                  <div className="table-container">
-                    <table className="data-table">
-                      <thead>
-                        <tr>
-                          <th>Nombre</th>
-                          <th>Curso</th>
-                          <th>Equipo</th>
-                          <th>Colegio</th>
-                        </tr>
-                      </thead>
-                      <tbody>
+                  <>
+                    {isMobile ? (
+                      <div className="mobile-cards-container">
                         {estudiantes.map((estudiante) => (
-                          <tr key={estudiante.id}>
-                            <td>{estudiante.nombre} {estudiante.apellido}</td>
-                            <td>{estudiante.curso}</td>
-                            <td>{getEquipoNombre(estudiante.equipo_id)}</td>
-                            <td>{getColegioNombre(estudiante.equipo_id)}</td>
-                          </tr>
+                          <div key={estudiante.id} className="mobile-card">
+                            <div className="mobile-card-header">
+                              <div className="mobile-card-title">
+                                <div className="mobile-card-name">
+                                  {estudiante.nombre} {estudiante.apellido}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="mobile-card-content">
+                              <div className="mobile-card-row">
+                                <span className="mobile-card-label">Curso:</span>
+                                <span className="mobile-card-value">{estudiante.curso}</span>
+                              </div>
+                              <div className="mobile-card-row">
+                                <span className="mobile-card-label">Equipo:</span>
+                                <span className="mobile-card-value">{getEquipoNombre(estudiante.equipo_id)}</span>
+                              </div>
+                              <div className="mobile-card-row">
+                                <span className="mobile-card-label">Colegio:</span>
+                                <span className="mobile-card-value">{getColegioNombre(estudiante.equipo_id)}</span>
+                              </div>
+                            </div>
+                          </div>
                         ))}
-                      </tbody>
-                    </table>
-                  </div>
+                      </div>
+                    ) : (
+                      <div className="table-container">
+                        <table className="data-table">
+                          <thead>
+                            <tr>
+                              <th>Nombre</th>
+                              <th>Curso</th>
+                              <th>Equipo</th>
+                              <th>Colegio</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {estudiantes.map((estudiante) => (
+                              <tr key={estudiante.id}>
+                                <td>{estudiante.nombre} {estudiante.apellido}</td>
+                                <td>{estudiante.curso}</td>
+                                <td>{getEquipoNombre(estudiante.equipo_id)}</td>
+                                <td>{getColegioNombre(estudiante.equipo_id)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <p>No hay estudiantes disponibles</p>
                 )}
@@ -532,26 +564,54 @@ const Dashboard: React.FC = () => {
               <div className="tutors-section">
                 <h2 className="section-title">Tutores</h2>
                 {tutores.length > 0 ? (
-                  <div className="table-container">
-                    <table className="data-table">
-                      <thead>
-                        <tr>
-                          <th>Nombre</th>
-                          <th>Equipo</th>
-                          <th>Colegio</th>
-                        </tr>
-                      </thead>
-                      <tbody>
+                  <>
+                    {isMobile ? (
+                      <div className="mobile-cards-container">
                         {tutores.map((tutor) => (
-                          <tr key={tutor.id}>
-                            <td>{tutor.nombre} {tutor.apellido}</td>
-                            <td>{getEquipoNombre(tutor.equipo_id)}</td>
-                            <td>{getColegioNombre(tutor.equipo_id)}</td>
-                          </tr>
+                          <div key={tutor.id} className="mobile-card">
+                            <div className="mobile-card-header">
+                              <div className="mobile-card-title">
+                                <div className="mobile-card-name">
+                                  {tutor.nombre} {tutor.apellido}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="mobile-card-content">
+                              <div className="mobile-card-row">
+                                <span className="mobile-card-label">Equipo:</span>
+                                <span className="mobile-card-value">{getEquipoNombre(tutor.equipo_id)}</span>
+                              </div>
+                              <div className="mobile-card-row">
+                                <span className="mobile-card-label">Colegio:</span>
+                                <span className="mobile-card-value">{getColegioNombre(tutor.equipo_id)}</span>
+                              </div>
+                            </div>
+                          </div>
                         ))}
-                      </tbody>
-                    </table>
-                  </div>
+                      </div>
+                    ) : (
+                      <div className="table-container">
+                        <table className="data-table">
+                          <thead>
+                            <tr>
+                              <th>Nombre</th>
+                              <th>Equipo</th>
+                              <th>Colegio</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {tutores.map((tutor) => (
+                              <tr key={tutor.id}>
+                                <td>{tutor.nombre} {tutor.apellido}</td>
+                                <td>{getEquipoNombre(tutor.equipo_id)}</td>
+                                <td>{getColegioNombre(tutor.equipo_id)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <p>No hay tutores disponibles</p>
                 )}

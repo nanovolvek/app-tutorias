@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 interface Unidad {
   unidad_key: string;
@@ -31,6 +32,7 @@ interface Student {
 
 const PruebaDiagnostico: React.FC = () => {
   const { fetchWithAuth, user } = useAuth();
+  const isMobile = useIsMobile();
   
   // Estados
   const [unidades, setUnidades] = useState<Unidad[]>([]);
@@ -42,6 +44,7 @@ const PruebaDiagnostico: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [editingModulo, setEditingModulo] = useState<string | null>(null);
   const [editingStudent, setEditingStudent] = useState<number | null>(null);
+  const [expandedCardId, setExpandedCardId] = useState<number | null>(null);
 
   // Estados de porcentajes de logro
   const porcentajeStates = [
@@ -341,8 +344,96 @@ const PruebaDiagnostico: React.FC = () => {
               <p>No hay estudiantes disponibles para mostrar.</p>
             </div>
           ) : (
-            <div className="tickets-table-container">
-              <table className="tickets-table">
+            <>
+              {isMobile ? (
+                <div className="tickets-mobile-cards-container">
+                  {getFilteredStudents().map(student => {
+                    const isExpanded = expandedCardId === student.id;
+                    return (
+                      <div key={student.id} className="tickets-mobile-card">
+                        <div 
+                          className="tickets-mobile-card-header"
+                          onClick={() => setExpandedCardId(isExpanded ? null : student.id)}
+                        >
+                          <div className="tickets-mobile-card-title">
+                            <div className="tickets-mobile-card-name">
+                              {student.nombre} {student.apellido}
+                            </div>
+                            {user?.rol === 'admin' && (
+                              <div className="tickets-mobile-card-school">
+                                {student.colegio_nombre || 'Sin colegio'}
+                              </div>
+                            )}
+                          </div>
+                          <div className="tickets-mobile-card-arrow">
+                            {isExpanded ? '▼' : '▶'}
+                          </div>
+                        </div>
+                        {isExpanded && (
+                          <div className="tickets-mobile-card-content">
+                            {modulos.map(modulo => {
+                              const currentStatus = getPruebaStatus(modulo.modulo_key, student.id);
+                              const isEditing = editingModulo === modulo.modulo_key && editingStudent === student.id;
+                              return (
+                                <div key={modulo.modulo_key} className="tickets-mobile-modulo">
+                                  <div className="tickets-mobile-modulo-header">
+                                    <div className="tickets-mobile-modulo-title">{modulo.nombre}</div>
+                                    <div className="tickets-mobile-modulo-desc">{modulo.descripcion}</div>
+                                  </div>
+                                  <div className="tickets-mobile-modulo-content">
+                                    {isEditing ? (
+                                      <div className="tickets-mobile-ticket-editor">
+                                        {porcentajeStates.map(state => (
+                                          <button
+                                            key={state.key}
+                                            className={`tickets-mobile-ticket-option ${currentStatus === state.key ? 'active' : ''}`}
+                                            style={{ backgroundColor: state.color }}
+                                            onClick={() => {
+                                              updatePruebaStatus(student.id, modulo.modulo_key, state.key);
+                                              setEditingModulo(null);
+                                              setEditingStudent(null);
+                                            }}
+                                          >
+                                            {state.label}
+                                          </button>
+                                        ))}
+                                        <button
+                                          className="tickets-mobile-ticket-cancel"
+                                          onClick={() => {
+                                            setEditingModulo(null);
+                                            setEditingStudent(null);
+                                          }}
+                                        >
+                                          ✕
+                                        </button>
+                                      </div>
+                                    ) : (
+                                      <button
+                                        className="tickets-mobile-ticket-display"
+                                        style={{ 
+                                          backgroundColor: porcentajeStates.find(s => s.key === currentStatus)?.color || '#6B7280'
+                                        }}
+                                        onClick={() => {
+                                          setEditingModulo(modulo.modulo_key);
+                                          setEditingStudent(student.id);
+                                        }}
+                                      >
+                                        {porcentajeStates.find(s => s.key === currentStatus)?.label || 'Vacío'}
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="tickets-table-container">
+                  <table className="tickets-table">
                 <thead>
                   <tr>
                     <th className="student-header sticky-col-1">
@@ -430,6 +521,8 @@ const PruebaDiagnostico: React.FC = () => {
                 </tbody>
               </table>
             </div>
+              )}
+            </>
           )}
         </div>
       )}
@@ -724,6 +817,11 @@ const PruebaDiagnostico: React.FC = () => {
             margin-bottom: 0.5rem;
           }
 
+          /* Cards móviles para pruebas */
+          .tickets-mobile-cards-container {
+            display: none;
+          }
+
           @media (max-width: 768px) {
             .filter-row {
               flex-direction: column;
@@ -735,20 +833,138 @@ const PruebaDiagnostico: React.FC = () => {
             }
 
             .tickets-table-container {
+              display: none;
+            }
+
+            .tickets-mobile-cards-container {
+              display: block;
+            }
+
+            .tickets-mobile-card {
+              background: white;
+              border-radius: 12px;
+              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+              margin-bottom: 1rem;
+              overflow: hidden;
+            }
+
+            .tickets-mobile-card-header {
+              padding: 1rem;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              cursor: pointer;
+              background: #f8fafc;
+              border-bottom: 1px solid #e5e7eb;
+            }
+
+            .tickets-mobile-card-title {
+              flex: 1;
+            }
+
+            .tickets-mobile-card-name {
+              font-weight: 600;
+              color: #1f2937;
+              font-size: 1rem;
+              margin-bottom: 0.25rem;
+            }
+
+            .tickets-mobile-card-school {
+              font-size: 0.85rem;
+              color: #6b7280;
+            }
+
+            .tickets-mobile-card-arrow {
+              font-size: 1.2rem;
+              color: #6b7280;
+              margin-left: 1rem;
+            }
+
+            .tickets-mobile-card-content {
+              padding: 1rem;
+            }
+
+            .tickets-mobile-modulo {
+              margin-bottom: 1rem;
+              padding-bottom: 1rem;
+              border-bottom: 1px solid #e5e7eb;
+            }
+
+            .tickets-mobile-modulo:last-child {
+              border-bottom: none;
+              margin-bottom: 0;
+              padding-bottom: 0;
+            }
+
+            .tickets-mobile-modulo-header {
+              margin-bottom: 0.75rem;
+            }
+
+            .tickets-mobile-modulo-title {
+              font-weight: 600;
+              color: #1f2937;
+              font-size: 0.95rem;
+              margin-bottom: 0.25rem;
+            }
+
+            .tickets-mobile-modulo-desc {
+              font-size: 0.8rem;
+              color: #6b7280;
+            }
+
+            .tickets-mobile-modulo-content {
+              display: flex;
+              justify-content: center;
+            }
+
+            .tickets-mobile-ticket-display {
+              padding: 0.75rem 1.5rem;
+              border: none;
+              border-radius: 20px;
+              color: white;
+              font-weight: 600;
+              cursor: pointer;
+              transition: all 0.3s ease;
+              min-width: 80px;
               font-size: 0.9rem;
             }
 
-            .tickets-table th,
-            .tickets-table td {
-              padding: 0.5rem;
+            .tickets-mobile-ticket-editor {
+              display: flex;
+              flex-direction: column;
+              gap: 0.5rem;
+              align-items: center;
+              width: 100%;
             }
 
-            .modulo-title {
+            .tickets-mobile-ticket-option {
+              padding: 0.5rem 1rem;
+              border: none;
+              border-radius: 15px;
+              color: white;
+              font-weight: 600;
+              cursor: pointer;
+              transition: all 0.3s ease;
               font-size: 0.9rem;
+              min-width: 80px;
+              width: 100%;
             }
 
-            .modulo-desc {
-              font-size: 0.7rem;
+            .tickets-mobile-ticket-option.active {
+              border: 2px solid white;
+              box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.2);
+            }
+
+            .tickets-mobile-ticket-cancel {
+              padding: 0.4rem 0.8rem;
+              border: none;
+              border-radius: 50%;
+              background: #ef4444;
+              color: white;
+              cursor: pointer;
+              font-size: 0.8rem;
+              transition: all 0.3s ease;
+              margin-top: 0.5rem;
             }
           }
         `
