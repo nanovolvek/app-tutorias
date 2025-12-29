@@ -862,6 +862,7 @@ ul, ol {
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
+  margin: 20px;
 }
 
 .modal-header {
@@ -871,6 +872,10 @@ ul, ol {
   padding: 24px 24px 0 24px;
   border-bottom: 1px solid #e5e7eb;
   margin-bottom: 24px;
+}
+
+.modal-body {
+  padding: 0 24px 24px 24px;
 }
 
 .modal-header h3 {

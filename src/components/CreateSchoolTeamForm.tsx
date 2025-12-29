@@ -61,6 +61,7 @@ const CreateSchoolTeamForm: React.FC<CreateSchoolTeamFormProps> = ({ onSuccess, 
     setSuccessMessage('');
 
     try {
+      console.log('🔍 Intentando crear colegio:', { nombre: schoolNombre.trim(), comuna: schoolComuna.trim() });
       const response = await fetchWithAuth('/schools/', {
         method: 'POST',
         body: JSON.stringify({
@@ -68,6 +69,7 @@ const CreateSchoolTeamForm: React.FC<CreateSchoolTeamFormProps> = ({ onSuccess, 
           comuna: schoolComuna.trim()
         })
       });
+      console.log('🔍 Respuesta del servidor:', response.status, response.statusText);
 
       if (response.ok) {
         const newSchool = await response.json();
@@ -84,8 +86,26 @@ const CreateSchoolTeamForm: React.FC<CreateSchoolTeamFormProps> = ({ onSuccess, 
           setSuccessMessage('');
         }, 2000);
       } else {
-        const data = await response.json();
-        setError(data.detail || 'Error al crear el colegio');
+        let errorMessage = 'Error al crear el colegio';
+        try {
+          const data = await response.json();
+          errorMessage = data.detail || data.message || errorMessage;
+          if (response.status === 403) {
+            errorMessage = 'No tienes permisos de administrador para crear colegios';
+          } else if (response.status === 401) {
+            errorMessage = 'Sesión expirada. Por favor, inicia sesión nuevamente';
+          }
+        } catch (parseError) {
+          // Si no se puede parsear el JSON, usar el mensaje por defecto
+          if (response.status === 403) {
+            errorMessage = 'No tienes permisos de administrador para crear colegios';
+          } else if (response.status === 401) {
+            errorMessage = 'Sesión expirada. Por favor, inicia sesión nuevamente';
+          } else {
+            errorMessage = `Error ${response.status}: ${response.statusText}`;
+          }
+        }
+        setError(errorMessage);
       }
     } catch (error: any) {
       console.error('Error al crear colegio:', error);
@@ -128,8 +148,26 @@ const CreateSchoolTeamForm: React.FC<CreateSchoolTeamFormProps> = ({ onSuccess, 
           // No cerrar automáticamente, permitir crear más
         }, 2000);
       } else {
-        const data = await response.json();
-        setError(data.detail || 'Error al crear el equipo');
+        let errorMessage = 'Error al crear el equipo';
+        try {
+          const data = await response.json();
+          errorMessage = data.detail || data.message || errorMessage;
+          if (response.status === 403) {
+            errorMessage = 'No tienes permisos de administrador para crear equipos';
+          } else if (response.status === 401) {
+            errorMessage = 'Sesión expirada. Por favor, inicia sesión nuevamente';
+          }
+        } catch (parseError) {
+          // Si no se puede parsear el JSON, usar el mensaje por defecto
+          if (response.status === 403) {
+            errorMessage = 'No tienes permisos de administrador para crear equipos';
+          } else if (response.status === 401) {
+            errorMessage = 'Sesión expirada. Por favor, inicia sesión nuevamente';
+          } else {
+            errorMessage = `Error ${response.status}: ${response.statusText}`;
+          }
+        }
+        setError(errorMessage);
       }
     } catch (error: any) {
       console.error('Error al crear equipo:', error);
