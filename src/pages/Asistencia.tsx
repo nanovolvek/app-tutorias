@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useIsMobile } from '../hooks/useIsMobile';
 import './Asistencia.css';
 
 interface Week {
@@ -58,6 +59,20 @@ const Asistencia: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [editingWeek, setEditingWeek] = useState<string | null>(null);
   const [editingPerson, setEditingPerson] = useState<number | null>(null);
+  const [expandedPersons, setExpandedPersons] = useState<Set<number>>(new Set());
+  const isMobile = useIsMobile();
+
+  const togglePerson = (personId: number) => {
+    setExpandedPersons(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(personId)) {
+        newSet.delete(personId);
+      } else {
+        newSet.add(personId);
+      }
+      return newSet;
+    });
+  };
 
   // Estados de asistencia
   const attendanceStates = [
@@ -619,112 +634,218 @@ const Asistencia: React.FC = () => {
           {loading ? (
             <div className="loading">Cargando registros de asistencia...</div>
           ) : (
-            <div className="attendance-table-container">
-              <table className="attendance-table">
-                <thead>
-                  <tr>
-                    <th className="person-header">
-                      {selectedPersonType === 'estudiante' ? 'Estudiante' : 'Tutor'}
-                    </th>
-                    <th className="school-header">Colegio</th>
-                    {getFilteredWeeks().map(week => (
-                      <th key={week.semana_key} className="week-header">
-                        <div className="week-info">
-                          <span className="week-number">S{week.semana_numero}</span>
-                          <span className="week-dates">{week.dias}</span>
-                        </div>
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
+            <>
+              {isMobile ? (
+                <div className="mobile-attendance-cards">
                   {getFilteredPersons().map(person => {
                     const personData = getPersonData(person.id);
+                    const isExpanded = expandedPersons.has(person.id);
                     return (
-                      <tr key={person.id}>
-                        <td className="person-cell">
-                          <span className="person-name">
-                            {person.nombre} {person.apellido}
-                          </span>
-                        </td>
-                        <td className="school-cell">
-                          <span className="school-name">
-                            {personData?.colegio_nombre || 'Sin colegio'}
-                          </span>
-                        </td>
-                      {getFilteredWeeks().map(week => {
-                        const currentStatus = getAttendanceStatus(week.semana_key, person.id);
-                        const isEditing = editingWeek === week.semana_key && editingPerson === person.id;
-                        
-                        return (
-                          <td key={`${person.id}-${week.semana_key}`} className="status-cell">
-                            <div className="status-container">
-                              {isEditing ? (
-                                <div className="status-options">
-                                  {attendanceStates.map(state => (
-                                    <button
-                                      key={state.key}
-                                      className="status-option"
-                                      style={{ backgroundColor: state.color }}
-                                      onClick={() => {
-                                        updateAttendanceStatus(week.semana_key, state.key, person.id);
-                                        setEditingWeek(null);
-                                        setEditingPerson(null);
-                                      }}
-                                    >
-                                      {state.label}
-                                    </button>
-                                  ))}
-                                  <button
-                                    className="status-option clear"
-                                    onClick={() => {
-                                      updateAttendanceStatus(week.semana_key, null, person.id);
-                                      setEditingWeek(null);
-                                      setEditingPerson(null);
-                                    }}
-                                  >
-                                    Sin estado
-                                  </button>
-                                  <button
-                                    className="status-option cancel"
-                                    onClick={() => {
-                                      setEditingWeek(null);
-                                      setEditingPerson(null);
-                                    }}
-                                  >
-                                    Cancelar
-                                  </button>
-                                </div>
-                              ) : (
-                                <button
-                                  className={`status-display ${currentStatus ? 'has-status' : 'no-status'}`}
-                                  style={{ 
-                                    backgroundColor: currentStatus 
-                                      ? attendanceStates.find(s => s.key === currentStatus)?.color || '#6B7280'
-                                      : '#f3f4f6',
-                                    color: currentStatus ? 'white' : '#6B7280'
-                                  }}
-                                  onClick={() => {
-                                    setEditingWeek(week.semana_key);
-                                    setEditingPerson(person.id);
-                                  }}
-                                >
-                                  {currentStatus 
-                                    ? attendanceStates.find(s => s.key === currentStatus)?.label || 'Desconocido'
-                                    : 'Sin estado'
-                                  }
-                                </button>
-                              )}
+                      <div key={person.id} className="mobile-attendance-card">
+                        <div 
+                          className="mobile-attendance-card-header"
+                          onClick={() => togglePerson(person.id)}
+                        >
+                          <div className="mobile-attendance-card-title">
+                            <div className="mobile-attendance-card-name">
+                              {person.nombre} {person.apellido}
                             </div>
-                          </td>
-                        );
-                      })}
-                      </tr>
+                            <div className="mobile-attendance-card-school">
+                              {personData?.colegio_nombre || 'Sin colegio'}
+                            </div>
+                          </div>
+                          <div className="mobile-attendance-card-arrow">
+                            {isExpanded ? '▼' : '▶'}
+                          </div>
+                        </div>
+                        {isExpanded && (
+                          <div className="mobile-attendance-card-content">
+                            {getFilteredWeeks().map(week => {
+                              const currentStatus = getAttendanceStatus(week.semana_key, person.id);
+                              const isEditing = editingWeek === week.semana_key && editingPerson === person.id;
+                              
+                              return (
+                                <div key={week.semana_key} className="mobile-attendance-week">
+                                  <div className="mobile-attendance-week-header">
+                                    <span className="mobile-attendance-week-number">S{week.semana_numero}</span>
+                                    <span className="mobile-attendance-week-dates">{week.dias}</span>
+                                  </div>
+                                  <div className="mobile-attendance-week-status">
+                                    {isEditing ? (
+                                      <div className="mobile-status-options">
+                                        {attendanceStates.map(state => (
+                                          <button
+                                            key={state.key}
+                                            className="mobile-status-option"
+                                            style={{ backgroundColor: state.color }}
+                                            onClick={() => {
+                                              updateAttendanceStatus(week.semana_key, state.key, person.id);
+                                              setEditingWeek(null);
+                                              setEditingPerson(null);
+                                            }}
+                                          >
+                                            {state.label}
+                                          </button>
+                                        ))}
+                                        <button
+                                          className="mobile-status-option clear"
+                                          onClick={() => {
+                                            updateAttendanceStatus(week.semana_key, null, person.id);
+                                            setEditingWeek(null);
+                                            setEditingPerson(null);
+                                          }}
+                                        >
+                                          Sin estado
+                                        </button>
+                                        <button
+                                          className="mobile-status-option cancel"
+                                          onClick={() => {
+                                            setEditingWeek(null);
+                                            setEditingPerson(null);
+                                          }}
+                                        >
+                                          Cancelar
+                                        </button>
+                                      </div>
+                                    ) : (
+                                      <button
+                                        className={`mobile-status-display ${currentStatus ? 'has-status' : 'no-status'}`}
+                                        style={{ 
+                                          backgroundColor: currentStatus 
+                                            ? attendanceStates.find(s => s.key === currentStatus)?.color || '#6B7280'
+                                            : '#f3f4f6',
+                                          color: currentStatus ? 'white' : '#6B7280'
+                                        }}
+                                        onClick={() => {
+                                          setEditingWeek(week.semana_key);
+                                          setEditingPerson(person.id);
+                                        }}
+                                      >
+                                        {currentStatus 
+                                          ? attendanceStates.find(s => s.key === currentStatus)?.label || 'Desconocido'
+                                          : 'Sin estado'
+                                        }
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
                     );
                   })}
-                </tbody>
-              </table>
-            </div>
+                </div>
+              ) : (
+                <div className="attendance-table-container">
+                  <table className="attendance-table">
+                    <thead>
+                      <tr>
+                        <th className="person-header sticky-col-1">
+                          {selectedPersonType === 'estudiante' ? 'Estudiante' : 'Tutor'}
+                        </th>
+                        <th className="school-header sticky-col-2">Colegio</th>
+                        {getFilteredWeeks().map(week => (
+                          <th key={week.semana_key} className="week-header">
+                            <div className="week-info">
+                              <span className="week-number">S{week.semana_numero}</span>
+                              <span className="week-dates">{week.dias}</span>
+                            </div>
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {getFilteredPersons().map(person => {
+                        const personData = getPersonData(person.id);
+                        return (
+                          <tr key={person.id}>
+                            <td className="person-cell sticky-col-1">
+                              <span className="person-name">
+                                {person.nombre} {person.apellido}
+                              </span>
+                            </td>
+                            <td className="school-cell sticky-col-2">
+                              <span className="school-name">
+                                {personData?.colegio_nombre || 'Sin colegio'}
+                              </span>
+                            </td>
+                          {getFilteredWeeks().map(week => {
+                            const currentStatus = getAttendanceStatus(week.semana_key, person.id);
+                            const isEditing = editingWeek === week.semana_key && editingPerson === person.id;
+                            
+                            return (
+                              <td key={`${person.id}-${week.semana_key}`} className="status-cell">
+                                <div className="status-container">
+                                  {isEditing ? (
+                                    <div className="status-options">
+                                      {attendanceStates.map(state => (
+                                        <button
+                                          key={state.key}
+                                          className="status-option"
+                                          style={{ backgroundColor: state.color }}
+                                          onClick={() => {
+                                            updateAttendanceStatus(week.semana_key, state.key, person.id);
+                                            setEditingWeek(null);
+                                            setEditingPerson(null);
+                                          }}
+                                        >
+                                          {state.label}
+                                        </button>
+                                      ))}
+                                      <button
+                                        className="status-option clear"
+                                        onClick={() => {
+                                          updateAttendanceStatus(week.semana_key, null, person.id);
+                                          setEditingWeek(null);
+                                          setEditingPerson(null);
+                                        }}
+                                      >
+                                        Sin estado
+                                      </button>
+                                      <button
+                                        className="status-option cancel"
+                                        onClick={() => {
+                                          setEditingWeek(null);
+                                          setEditingPerson(null);
+                                        }}
+                                      >
+                                        Cancelar
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <button
+                                      className={`status-display ${currentStatus ? 'has-status' : 'no-status'}`}
+                                      style={{ 
+                                        backgroundColor: currentStatus 
+                                          ? attendanceStates.find(s => s.key === currentStatus)?.color || '#6B7280'
+                                          : '#f3f4f6',
+                                        color: currentStatus ? 'white' : '#6B7280'
+                                      }}
+                                      onClick={() => {
+                                        setEditingWeek(week.semana_key);
+                                        setEditingPerson(person.id);
+                                      }}
+                                    >
+                                      {currentStatus 
+                                        ? attendanceStates.find(s => s.key === currentStatus)?.label || 'Desconocido'
+                                        : 'Sin estado'
+                                      }
+                                    </button>
+                                  )}
+                                </div>
+                              </td>
+                            );
+                          })}
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </>
           )}
         </div>
       )}

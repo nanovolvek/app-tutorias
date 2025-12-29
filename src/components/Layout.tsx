@@ -88,6 +88,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 </li>
               ))}
             </ul>
+            {/* Espacio adicional al final para facilitar scroll en móvil */}
+            <div style={{ height: '200px', minHeight: '200px' }}></div>
           </nav>
         </div>
       </aside>

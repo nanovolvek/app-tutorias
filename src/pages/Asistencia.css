@@ -158,8 +158,168 @@
 /* Contenedor de tabla */
 .attendance-table-container {
   overflow-x: auto;
+  overflow-y: auto;
   border-radius: 8px;
   border: 1px solid #e5e7eb;
+  max-height: calc(100vh - 300px);
+  position: relative;
+}
+
+/* Cards móviles para asistencia */
+.mobile-attendance-cards {
+  display: none;
+}
+
+.mobile-attendance-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  margin-bottom: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.mobile-attendance-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  cursor: pointer;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  transition: background-color 0.2s ease;
+}
+
+.mobile-attendance-card-header:hover {
+  background: #f1f5f9;
+}
+
+.mobile-attendance-card-header:active {
+  background: #e2e8f0;
+}
+
+.mobile-attendance-card-title {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mobile-attendance-card-name {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 1rem;
+}
+
+.mobile-attendance-card-school {
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.mobile-attendance-card-arrow {
+  font-size: 1.2rem;
+  color: #64748b;
+  transition: transform 0.3s ease;
+}
+
+.mobile-attendance-card-content {
+  padding: 16px;
+  background: white;
+  animation: slideDown 0.3s ease;
+}
+
+.mobile-attendance-week {
+  padding: 12px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.mobile-attendance-week:last-child {
+  border-bottom: none;
+}
+
+.mobile-attendance-week-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.mobile-attendance-week-number {
+  font-weight: 600;
+  color: #059669;
+  font-size: 0.9rem;
+}
+
+.mobile-attendance-week-dates {
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.mobile-attendance-week-status {
+  width: 100%;
+}
+
+.mobile-status-display {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #f3f4f6;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.mobile-status-display:hover {
+  background: #e5e7eb;
+  transform: translateY(-1px);
+}
+
+.mobile-status-display.has-status {
+  color: white;
+  font-weight: 600;
+}
+
+.mobile-status-display.no-status {
+  color: #6b7280;
+  font-style: italic;
+}
+
+.mobile-status-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.mobile-status-option {
+  padding: 10px 12px;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.mobile-status-option:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.mobile-status-option.clear {
+  background: #dc2626;
+  grid-column: 1 / -1;
+}
+
+.mobile-status-option.cancel {
+  background: #6b7280;
+  grid-column: 1 / -1;
 }
 
 .attendance-table {
@@ -167,6 +327,18 @@
   border-collapse: collapse;
   background: white;
   min-width: 600px;
+}
+
+.attendance-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.attendance-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 /* Headers de tabla */
@@ -179,8 +351,25 @@
   border-bottom: 2px solid #e5e7eb;
   position: sticky;
   left: 0;
-  z-index: 10;
+  top: 0;
+  z-index: 25;
   min-width: 200px;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.school-header {
+  background: #f8fafc;
+  padding: 15px;
+  text-align: left;
+  font-weight: 600;
+  color: #1f2937;
+  border-bottom: 2px solid #e5e7eb;
+  position: sticky;
+  left: 200px;
+  top: 0;
+  z-index: 24;
+  min-width: 150px;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .week-header {
@@ -190,6 +379,9 @@
   font-weight: 600;
   color: #1f2937;
   border-bottom: 2px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 20;
   min-width: 120px;
 }
 
@@ -222,7 +414,40 @@
   border-right: 1px solid #e5e7eb;
   position: sticky;
   left: 0;
-  z-index: 5;
+  z-index: 15;
+  min-width: 200px;
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+}
+
+.school-cell {
+  background: white;
+  padding: 15px;
+  text-align: left;
+  font-weight: 500;
+  color: #1f2937;
+  border-bottom: 1px solid #e5e7eb;
+  border-right: 1px solid #e5e7eb;
+  position: sticky;
+  left: 200px;
+  z-index: 14;
+  min-width: 150px;
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+}
+
+.person-cell.sticky-col-1 {
+  background: #f8fafc;
+}
+
+.school-cell.sticky-col-2 {
+  background: white;
+}
+
+.attendance-table tbody tr:hover .person-cell {
+  background: #f1f5f9;
+}
+
+.attendance-table tbody tr:hover .school-cell {
+  background: #f9fafb;
 }
 
 .person-name {
@@ -366,6 +591,17 @@
 .info-section li {
   margin-bottom: 8px;
   line-height: 1.5;
+}
+
+/* Ocultar tabla en móvil, mostrar cards */
+@media (max-width: 768px) {
+  .attendance-table-container {
+    display: none;
+  }
+
+  .mobile-attendance-cards {
+    display: block;
+  }
 }
 
 /* Responsive */

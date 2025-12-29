@@ -418,6 +418,15 @@ ul, ol {
 .data-table thead {
   background: #f8fafc;
   border-bottom: 2px solid #e2e8f0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.data-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .data-table th {
