@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
 import ChangePasswordModal from '../components/ChangePasswordModal';
 import ForgotPasswordModal from '../components/ForgotPasswordModal';
 import './Login.css';
@@ -26,11 +25,12 @@ const Login: React.FC = () => {
   const [error, setError] = useState('');
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const { login, isLoading } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
 
     try {
       const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
@@ -79,6 +79,8 @@ const Login: React.FC = () => {
     } catch (error) {
       console.error('Error de login:', error);
       setError('Error de conexión');
+    } finally {
+      setIsLoading(false);
     }
   };
 

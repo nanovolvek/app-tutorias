@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import CreateUserForm from '../components/CreateUserForm';
-import { useIsMobile } from '../hooks/useIsMobile';
 
 interface Equipo {
   id: number;
@@ -31,7 +30,6 @@ const Usuarios: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const isMobile = useIsMobile();
 
   const fetchUsuarios = async () => {
     try {
