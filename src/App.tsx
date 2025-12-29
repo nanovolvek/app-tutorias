@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Estudiantes from './pages/Estudiantes';
 import Tutores from './pages/Tutores';
+import Usuarios from './pages/Usuarios';
 import Asistencia from './pages/Asistencia';
 import Tickets from './pages/Tickets';
 import PruebaDiagnostico from './pages/PruebaDiagnostico';
@@ -57,6 +58,7 @@ function AppContent() {
         <Route path="/" element={<Dashboard />} />
         <Route path="/estudiantes" element={<Estudiantes />} />
         <Route path="/tutores" element={<Tutores />} />
+        <Route path="/usuarios" element={<Usuarios />} />
         <Route path="/asistencia" element={<Asistencia />} />
         <Route path="/tickets" element={<Tickets />} />
         <Route path="/prueba-diagnostico" element={<PruebaDiagnostico />} />

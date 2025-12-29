@@ -149,6 +149,31 @@ python scripts/reset_sequences.py
 
 Esto reseteará las secuencias de IDs para `asistencia_estudiantes` y `asistencia_tutores`.
 
+### **Agregar Campos de Gestión de Contraseñas**
+
+Si acabas de actualizar el código y necesitas agregar los nuevos campos de gestión de contraseñas (`password_changed`, `password_reset_token`, `password_reset_expires`), ejecuta la migración:
+
+**Opción 1: Usar el script Python (Recomendado)**
+```bash
+cd backend
+python -m venv venv
+venv\Scripts\activate  # Windows
+pip install -r requirements.txt
+python scripts/add_password_fields.py
+```
+
+**Opción 2: Ejecutar SQL directamente en DBeaver**
+1. Conecta a la base de datos de producción en DBeaver
+2. Abre el archivo `backend/scripts/add_password_fields.sql`
+3. Ejecuta el script completo
+
+Esto agregará los campos necesarios para:
+- Cambio de contraseña obligatorio al primer login
+- Recuperación de contraseña olvidada
+- Gestión de tokens de recuperación
+
+**Nota**: Los usuarios existentes se marcarán como `password_changed = TRUE` (asumiendo que ya cambiaron su contraseña). Los nuevos usuarios deberán cambiar su contraseña al primer login.
+
 ## 📁 Estructura del Proyecto
 
 ```
@@ -198,6 +223,8 @@ app-tutorias/
 - Los tokens JWT tienen expiración de 30 minutos
 - Las conexiones a la base de datos usan SSL en producción
 - Las variables de entorno están protegidas
+- **Nuevo**: Cambio de contraseña obligatorio al primer login
+- **Nuevo**: Sistema de recuperación de contraseña con tokens temporales
 
 ## 📈 Próximos Pasos
 1. **Upgrade a plan pago** en Render para eliminar delays

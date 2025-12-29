@@ -25,9 +25,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       { path: '/material-apoyo', label: 'Material de Apoyo', icon: '📚' },
     ];
 
-    // Solo mostrar "Tutores" si es administrador
+    // Solo mostrar "Tutores" y "Usuarios" si es administrador
     if (user?.rol === 'admin') {
       baseItems.splice(2, 0, { path: '/tutores', label: 'Tutores', icon: '👨‍🏫' });
+      baseItems.splice(3, 0, { path: '/usuarios', label: 'Usuarios', icon: '👤' });
     }
 
     return baseItems;

@@ -8,6 +8,7 @@ interface User {
   rol: string;
   equipo_id?: number;
   is_active: boolean;
+  password_changed: boolean;
 }
 
 interface AuthContextType {

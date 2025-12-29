@@ -19,14 +19,21 @@
 
 body {
   margin: 0;
-  height: 100vh;
-  max-height: 100vh;
-  overflow: hidden;
   background-color: #f8fafc;
   color: #1e293b;
 }
 
+body.login-page {
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
+}
+
 #root {
+  min-height: 100vh;
+}
+
+#root.login-page {
   height: 100vh;
   max-height: 100vh;
   overflow: hidden;

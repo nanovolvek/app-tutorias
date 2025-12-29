@@ -18,6 +18,7 @@ class UsuarioLogin(BaseModel):
 class Usuario(UsuarioBase):
     id: int
     is_active: bool
+    password_changed: bool
     created_at: datetime
     updated_at: Optional[datetime] = None
     
@@ -27,6 +28,18 @@ class Usuario(UsuarioBase):
 class Token(BaseModel):
     access_token: str
     token_type: str
+    requires_password_change: Optional[bool] = False
 
 class TokenData(BaseModel):
     email: Optional[str] = None
+
+class ChangePassword(BaseModel):
+    current_password: Optional[str] = None
+    new_password: str
+
+class RequestPasswordReset(BaseModel):
+    email: EmailStr
+
+class ResetPassword(BaseModel):
+    token: str
+    new_password: str

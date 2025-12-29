@@ -61,6 +61,7 @@ def create_usuario(
     # Crear el usuario
     usuario_data = usuario.dict()
     usuario_data["hashed_password"] = get_password_hash(usuario_data.pop("password"))
+    usuario_data["password_changed"] = False  # El usuario debe cambiar su contraseña al primer login
     
     db_usuario = Usuario(**usuario_data)
     db.add(db_usuario)
