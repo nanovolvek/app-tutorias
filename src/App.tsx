@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Layout from './components/Layout';
 import Login from './pages/Login';
+import ResetPassword from './pages/ResetPassword';
 import Dashboard from './pages/Dashboard';
 import Estudiantes from './pages/Estudiantes';
 import Tutores from './pages/Tutores';
@@ -49,7 +50,12 @@ function AppContent() {
   }
 
   if (!isAuthenticated || !user || !token) {
-    return <Login />;
+    return (
+      <Routes>
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="*" element={<Login />} />
+      </Routes>
+    );
   }
 
   return (

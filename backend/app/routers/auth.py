@@ -12,6 +12,7 @@ from app.auth.dependencies import get_current_active_user
 from datetime import timedelta, datetime
 import secrets
 import uuid
+from app.utils.email import send_password_reset_email
 
 router = APIRouter(prefix="/auth", tags=["autenticación"])
 
@@ -127,13 +128,21 @@ def request_password_reset(
     user.password_reset_expires = datetime.utcnow() + timedelta(hours=1)  # Token válido por 1 hora
     db.commit()
     
-    # En un entorno real, aquí enviarías un email con el token
-    # Por ahora, retornamos el token (solo para desarrollo)
-    # TODO: Implementar envío de email
-    return {
-        "message": "Si el email existe, se enviará un enlace de recuperación",
-        "token": reset_token  # Solo para desarrollo, eliminar en producción
+    # Enviar email con el token
+    email_sent = send_password_reset_email(user.email, reset_token)
+    
+    # Si el email no se pudo enviar (SMTP no configurado), retornar el token en desarrollo
+    # En producción, esto no debería pasar si SMTP está configurado
+    response = {
+        "message": "Si el email existe, se enviará un enlace de recuperación"
     }
+    
+    # Solo en desarrollo, si SMTP no está configurado, mostrar el token
+    import os
+    if not email_sent and os.getenv("ENVIRONMENT", "production") == "development":
+        response["token"] = reset_token  # Solo para desarrollo
+    
+    return response
 
 @router.post("/reset-password")
 def reset_password(
