@@ -409,6 +409,71 @@ ul, ol {
   scroll-behavior: smooth;
 }
 
+/* Estilos para tablas de tickets - headers y columna de nombre sticky */
+.tickets-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tickets-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: #f8fafc;
+}
+
+.tickets-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: #f8fafc;
+  padding: 1rem;
+  text-align: center;
+  font-weight: 600;
+  color: #2d3748;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+/* Columna de nombre (estudiante) sticky en tablas de tickets */
+.tickets-table th.student-header.sticky-col-1,
+.tickets-table td.student-cell.sticky-col-1 {
+  position: sticky;
+  left: 0;
+  z-index: 10;
+  background-color: white;
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+  min-width: 150px;
+}
+
+.tickets-table thead th.student-header.sticky-col-1 {
+  background-color: #f8fafc;
+  z-index: 101;
+}
+
+.tickets-table tbody tr:hover td.student-cell.sticky-col-1 {
+  background-color: #f9fafb;
+}
+
+/* Columna de colegio sticky (si existe) en tablas de tickets */
+.tickets-table th.school-header.sticky-col-2,
+.tickets-table td.school-cell.sticky-col-2 {
+  position: sticky;
+  left: 150px; /* Ancho de la columna estudiante */
+  z-index: 9;
+  background-color: white;
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+  min-width: 120px;
+}
+
+.tickets-table thead th.school-header.sticky-col-2 {
+  background-color: #f8fafc;
+  z-index: 100;
+}
+
+.tickets-table tbody tr:hover td.school-cell.sticky-col-2 {
+  background-color: #f9fafb;
+}
+
 .data-table {
   width: 100%;
   border-collapse: collapse;

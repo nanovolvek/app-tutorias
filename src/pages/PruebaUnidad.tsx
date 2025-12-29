@@ -345,11 +345,11 @@ const PruebaUnidad: React.FC = () => {
               <table className="tickets-table">
                 <thead>
                   <tr>
-                    <th className="student-header">
+                    <th className="student-header sticky-col-1">
                       Estudiante
                     </th>
                     {user?.rol === 'admin' && (
-                      <th className="school-header">Colegio</th>
+                      <th className="school-header sticky-col-2">Colegio</th>
                     )}
                     {modulos.map(modulo => (
                       <th key={modulo.modulo_key} className="modulo-header">
@@ -362,13 +362,13 @@ const PruebaUnidad: React.FC = () => {
                 <tbody>
                   {getFilteredStudents().map(student => (
                     <tr key={student.id}>
-                      <td className="student-cell">
+                      <td className="student-cell sticky-col-1">
                         <span className="student-name">
                           {student.nombre} {student.apellido}
                         </span>
                       </td>
                       {user?.rol === 'admin' && (
-                        <td className="school-cell">
+                        <td className="school-cell sticky-col-2">
                           <span className="school-name">
                             {student.colegio_nombre || 'Sin colegio'}
                           </span>
