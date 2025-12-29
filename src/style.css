@@ -391,6 +391,8 @@ ul, ol {
   margin-bottom: 24px;
   max-height: calc(100vh - 300px);
   position: relative;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
 }
 
 /* Estilos para tablas de tickets y otras tablas con scroll */
@@ -403,6 +405,8 @@ ul, ol {
   margin-bottom: 24px;
   max-height: calc(100vh - 300px);
   position: relative;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
 }
 
 .data-table {
@@ -479,6 +483,49 @@ ul, ol {
 
 .data-table tbody tr:hover td.sticky-col-2 {
   background-color: #f9fafb;
+}
+
+/* Ajustes para móvil */
+@media (max-width: 768px) {
+  .table-container,
+  .tickets-table-container,
+  .attendance-table-container {
+    max-height: calc(100vh - 200px);
+    overflow-x: auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    /* Mejorar scroll en iOS */
+    overscroll-behavior: contain;
+  }
+
+  /* Columnas sticky más pequeñas en móvil */
+  .data-table th.sticky-col-1,
+  .data-table td.sticky-col-1 {
+    min-width: 90px;
+    width: 90px;
+  }
+
+  .data-table th.sticky-col-2,
+  .data-table td.sticky-col-2 {
+    left: 90px; /* Ajustado al nuevo ancho de columna 1 */
+    min-width: 150px;
+    width: 150px;
+  }
+
+  /* Mejorar visibilidad de scroll en móvil */
+  .table-container::-webkit-scrollbar,
+  .tickets-table-container::-webkit-scrollbar,
+  .attendance-table-container::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+  }
+
+  .table-container::-webkit-scrollbar-thumb,
+  .tickets-table-container::-webkit-scrollbar-thumb,
+  .attendance-table-container::-webkit-scrollbar-thumb {
+    background: #94a3b8;
+    border-radius: 4px;
+  }
 }
 
 /* Estilos para botones de acción */
@@ -842,12 +889,20 @@ ul, ol {
   }
   
   .data-table {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
+    min-width: 600px; /* Forzar scroll horizontal en móvil */
   }
   
   .data-table th,
   .data-table td {
-    padding: 8px 12px;
+    padding: 10px 8px;
+    white-space: nowrap; /* Evitar que el texto se corte */
+  }
+
+  /* Asegurar que las celdas no se compriman demasiado */
+  .data-table th:not(.sticky-col-1):not(.sticky-col-2),
+  .data-table td:not(.sticky-col-1):not(.sticky-col-2) {
+    min-width: 100px;
   }
   
   .section-header {
