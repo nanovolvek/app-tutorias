@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import AddTutorForm from '../components/AddTutorForm';
 import DeleteTutorForm from '../components/DeleteTutorForm';
 import ImportTutorForm from '../components/ImportTutorForm';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 interface Equipo {
   id: number;
@@ -36,6 +37,20 @@ const Tutores: React.FC = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showDeleteForm, setShowDeleteForm] = useState(false);
   const [showImportForm, setShowImportForm] = useState(false);
+  const [expandedTutores, setExpandedTutores] = useState<Set<number>>(new Set());
+  const isMobile = useIsMobile();
+
+  const toggleTutor = (tutorId: number) => {
+    setExpandedTutores(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(tutorId)) {
+        newSet.delete(tutorId);
+      } else {
+        newSet.add(tutorId);
+      }
+      return newSet;
+    });
+  };
 
   const fetchTutores = async () => {
     try {
@@ -209,60 +224,129 @@ const Tutores: React.FC = () => {
         </div>
       </div>
 
-      <div className="table-container">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th className="sticky-col-1">Nombre Completo</th>
-              <th>Email</th>
-              <th>Equipo</th>
-              <th>Colegio</th>
-              <th>Comuna</th>
-              <th>% Asistencia</th>
-              <th>Activo</th>
-              <th>Motivo Deserción</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tutores.length === 0 ? (
-              <tr>
-                <td colSpan={8} className="text-center">
-                  No hay tutores registrados
-                </td>
-              </tr>
-            ) : (
-              tutores.map((tutor) => {
+      {tutores.length === 0 ? (
+        <div className="no-data">
+          <p>No hay tutores registrados</p>
+        </div>
+      ) : (
+        <>
+          {isMobile ? (
+            <div className="mobile-cards-container">
+              {tutores.map((tutor) => {
                 const attendancePercentage = getAttendancePercentage(tutor);
+                const isExpanded = expandedTutores.has(tutor.id);
                 return (
-                  <tr key={tutor.id}>
-                    <td className="sticky-col-1">{tutor.nombre} {tutor.apellido}</td>
-                    <td>{tutor.email}</td>
-                    <td>{tutor.equipo?.nombre || 'Sin equipo'}</td>
-                    <td>{getColegioNombre(tutor)}</td>
-                    <td>{getComunaNombre(tutor)}</td>
-                    <td className={`attendance-cell ${getAttendanceColor(attendancePercentage)}`}>
-                      {attendancePercentage.toFixed(1)}%
-                    </td>
-                    <td>
-                      <span style={{
-                        padding: '4px 8px',
-                        borderRadius: '4px',
-                        fontSize: '0.85rem',
-                        fontWeight: '600',
-                        backgroundColor: tutor.activo !== false ? '#dcfce7' : '#fee2e2',
-                        color: tutor.activo !== false ? '#166534' : '#991b1b'
-                      }}>
-                        {tutor.activo !== false ? 'Sí' : 'No'}
-                      </span>
-                    </td>
-                    <td>{tutor.motivo_desercion || 'N/A'}</td>
-                  </tr>
+                  <div key={tutor.id} className="mobile-card">
+                    <div 
+                      className="mobile-card-header"
+                      onClick={() => toggleTutor(tutor.id)}
+                    >
+                      <div className="mobile-card-title">
+                        <div className="mobile-card-name">{tutor.nombre} {tutor.apellido}</div>
+                      </div>
+                      <div className="mobile-card-arrow">
+                        {isExpanded ? '▼' : '▶'}
+                      </div>
+                    </div>
+                    {isExpanded && (
+                      <div className="mobile-card-content">
+                        <div className="mobile-card-row">
+                          <span className="mobile-card-label">Email:</span>
+                          <span className="mobile-card-value">{tutor.email}</span>
+                        </div>
+                        <div className="mobile-card-row">
+                          <span className="mobile-card-label">Equipo:</span>
+                          <span className="mobile-card-value">{tutor.equipo?.nombre || 'Sin equipo'}</span>
+                        </div>
+                        <div className="mobile-card-row">
+                          <span className="mobile-card-label">Colegio:</span>
+                          <span className="mobile-card-value">{getColegioNombre(tutor)}</span>
+                        </div>
+                        <div className="mobile-card-row">
+                          <span className="mobile-card-label">Comuna:</span>
+                          <span className="mobile-card-value">{getComunaNombre(tutor)}</span>
+                        </div>
+                        <div className="mobile-card-row">
+                          <span className="mobile-card-label">% Asistencia:</span>
+                          <span className={`mobile-card-value attendance-cell ${getAttendanceColor(attendancePercentage)}`}>
+                            {attendancePercentage.toFixed(1)}%
+                          </span>
+                        </div>
+                        <div className="mobile-card-row">
+                          <span className="mobile-card-label">Activo:</span>
+                          <span className="mobile-card-value">
+                            <span style={{
+                              padding: '4px 8px',
+                              borderRadius: '4px',
+                              fontSize: '0.85rem',
+                              fontWeight: '600',
+                              backgroundColor: tutor.activo !== false ? '#dcfce7' : '#fee2e2',
+                              color: tutor.activo !== false ? '#166534' : '#991b1b'
+                            }}>
+                              {tutor.activo !== false ? 'Sí' : 'No'}
+                            </span>
+                          </span>
+                        </div>
+                        <div className="mobile-card-row">
+                          <span className="mobile-card-label">Motivo Deserción:</span>
+                          <span className="mobile-card-value">{tutor.motivo_desercion || 'N/A'}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+              })}
+            </div>
+          ) : (
+            <div className="table-container">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th className="sticky-col-1">Nombre Completo</th>
+                    <th>Email</th>
+                    <th>Equipo</th>
+                    <th>Colegio</th>
+                    <th>Comuna</th>
+                    <th>% Asistencia</th>
+                    <th>Activo</th>
+                    <th>Motivo Deserción</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tutores.map((tutor) => {
+                    const attendancePercentage = getAttendancePercentage(tutor);
+                    return (
+                      <tr key={tutor.id}>
+                        <td className="sticky-col-1">{tutor.nombre} {tutor.apellido}</td>
+                        <td>{tutor.email}</td>
+                        <td>{tutor.equipo?.nombre || 'Sin equipo'}</td>
+                        <td>{getColegioNombre(tutor)}</td>
+                        <td>{getComunaNombre(tutor)}</td>
+                        <td className={`attendance-cell ${getAttendanceColor(attendancePercentage)}`}>
+                          {attendancePercentage.toFixed(1)}%
+                        </td>
+                        <td>
+                          <span style={{
+                            padding: '4px 8px',
+                            borderRadius: '4px',
+                            fontSize: '0.85rem',
+                            fontWeight: '600',
+                            backgroundColor: tutor.activo !== false ? '#dcfce7' : '#fee2e2',
+                            color: tutor.activo !== false ? '#166534' : '#991b1b'
+                          }}>
+                            {tutor.activo !== false ? 'Sí' : 'No'}
+                          </span>
+                        </td>
+                        <td>{tutor.motivo_desercion || 'N/A'}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
+      )}
 
       {showAddForm && (
         <AddTutorForm

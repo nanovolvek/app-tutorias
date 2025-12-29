@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import AddStudentForm from '../components/AddStudentForm';
 import DeleteStudentForm from '../components/DeleteStudentForm';
 import ImportStudentForm from '../components/ImportStudentForm';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 interface Equipo {
   id: number;
@@ -42,7 +43,21 @@ const Estudiantes: React.FC = () => {
   const [showDeleteForm, setShowDeleteForm] = useState(false);
   const [showImportForm, setShowImportForm] = useState(false);
   const [attendanceStats, setAttendanceStats] = useState<any>(null);
+  const [expandedStudents, setExpandedStudents] = useState<Set<number>>(new Set());
+  const isMobile = useIsMobile();
   const { fetchWithAuth, user } = useAuth();
+
+  const toggleStudent = (studentId: number) => {
+    setExpandedStudents(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(studentId)) {
+        newSet.delete(studentId);
+      } else {
+        newSet.add(studentId);
+      }
+      return newSet;
+    });
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -212,62 +227,150 @@ const Estudiantes: React.FC = () => {
         )}
 
         {!loading && !error && students.length > 0 && (
-          <div className="table-container">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th className="sticky-col-1">RUT</th>
-                  <th className="sticky-col-2">Nombre Completo</th>
-                  <th>Curso</th>
-                  <th>Equipo</th>
-                  <th>Colegio</th>
-                  <th>Comuna</th>
-                  <th>% Asistencia</th>
-                  <th>Activo</th>
-                  <th>Motivo Deserción</th>
-                  <th>Apoderado</th>
-                  <th>Contacto</th>
-                  <th>Observaciones</th>
-                  <th>Fecha de Registro</th>
-                </tr>
-              </thead>
-              <tbody>
+          <>
+            {isMobile ? (
+              <div className="mobile-cards-container">
                 {students.map((student) => {
                   const attendancePercentage = getAttendancePercentage(student);
+                  const isExpanded = expandedStudents.has(student.id);
                   return (
-                    <tr key={student.id}>
-                      <td className="rut-cell sticky-col-1">{student.rut}</td>
-                      <td className="name-cell sticky-col-2">{student.nombre} {student.apellido}</td>
-                      <td>{student.curso}</td>
-                      <td>{student.equipo?.nombre || 'Sin equipo'}</td>
-                      <td>{getColegioNombre(student)}</td>
-                      <td>{getComunaNombre(student)}</td>
-                      <td className={`attendance-cell ${getAttendanceColor(attendancePercentage)}`}>
-                        {attendancePercentage.toFixed(1)}%
-                      </td>
-                      <td>
-                        <span style={{
-                          padding: '4px 8px',
-                          borderRadius: '4px',
-                          fontSize: '0.85rem',
-                          fontWeight: '600',
-                          backgroundColor: student.activo !== false ? '#dcfce7' : '#fee2e2',
-                          color: student.activo !== false ? '#166534' : '#991b1b'
-                        }}>
-                          {student.activo !== false ? 'Sí' : 'No'}
-                        </span>
-                      </td>
-                      <td>{student.motivo_desercion || 'N/A'}</td>
-                      <td>{student.nombre_apoderado || 'N/A'}</td>
-                      <td>{student.contacto_apoderado || 'N/A'}</td>
-                      <td className="observations-cell">{student.observaciones || 'N/A'}</td>
-                      <td>{new Date(student.created_at).toLocaleDateString('es-ES')}</td>
-                    </tr>
+                    <div key={student.id} className="mobile-card">
+                      <div 
+                        className="mobile-card-header"
+                        onClick={() => toggleStudent(student.id)}
+                      >
+                        <div className="mobile-card-title">
+                          <div className="mobile-card-rut">{student.rut}</div>
+                          <div className="mobile-card-name">{student.nombre} {student.apellido}</div>
+                        </div>
+                        <div className="mobile-card-arrow">
+                          {isExpanded ? '▼' : '▶'}
+                        </div>
+                      </div>
+                      {isExpanded && (
+                        <div className="mobile-card-content">
+                          <div className="mobile-card-row">
+                            <span className="mobile-card-label">Curso:</span>
+                            <span className="mobile-card-value">{student.curso}</span>
+                          </div>
+                          <div className="mobile-card-row">
+                            <span className="mobile-card-label">Equipo:</span>
+                            <span className="mobile-card-value">{student.equipo?.nombre || 'Sin equipo'}</span>
+                          </div>
+                          <div className="mobile-card-row">
+                            <span className="mobile-card-label">Colegio:</span>
+                            <span className="mobile-card-value">{getColegioNombre(student)}</span>
+                          </div>
+                          <div className="mobile-card-row">
+                            <span className="mobile-card-label">Comuna:</span>
+                            <span className="mobile-card-value">{getComunaNombre(student)}</span>
+                          </div>
+                          <div className="mobile-card-row">
+                            <span className="mobile-card-label">% Asistencia:</span>
+                            <span className={`mobile-card-value attendance-cell ${getAttendanceColor(attendancePercentage)}`}>
+                              {attendancePercentage.toFixed(1)}%
+                            </span>
+                          </div>
+                          <div className="mobile-card-row">
+                            <span className="mobile-card-label">Activo:</span>
+                            <span className="mobile-card-value">
+                              <span style={{
+                                padding: '4px 8px',
+                                borderRadius: '4px',
+                                fontSize: '0.85rem',
+                                fontWeight: '600',
+                                backgroundColor: student.activo !== false ? '#dcfce7' : '#fee2e2',
+                                color: student.activo !== false ? '#166534' : '#991b1b'
+                              }}>
+                                {student.activo !== false ? 'Sí' : 'No'}
+                              </span>
+                            </span>
+                          </div>
+                          <div className="mobile-card-row">
+                            <span className="mobile-card-label">Motivo Deserción:</span>
+                            <span className="mobile-card-value">{student.motivo_desercion || 'N/A'}</span>
+                          </div>
+                          <div className="mobile-card-row">
+                            <span className="mobile-card-label">Apoderado:</span>
+                            <span className="mobile-card-value">{student.nombre_apoderado || 'N/A'}</span>
+                          </div>
+                          <div className="mobile-card-row">
+                            <span className="mobile-card-label">Contacto:</span>
+                            <span className="mobile-card-value">{student.contacto_apoderado || 'N/A'}</span>
+                          </div>
+                          <div className="mobile-card-row">
+                            <span className="mobile-card-label">Observaciones:</span>
+                            <span className="mobile-card-value">{student.observaciones || 'N/A'}</span>
+                          </div>
+                          <div className="mobile-card-row">
+                            <span className="mobile-card-label">Fecha de Registro:</span>
+                            <span className="mobile-card-value">{new Date(student.created_at).toLocaleDateString('es-ES')}</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   );
                 })}
-              </tbody>
-            </table>
-          </div>
+              </div>
+            ) : (
+              <div className="table-container">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th className="sticky-col-1">RUT</th>
+                      <th className="sticky-col-2">Nombre Completo</th>
+                      <th>Curso</th>
+                      <th>Equipo</th>
+                      <th>Colegio</th>
+                      <th>Comuna</th>
+                      <th>% Asistencia</th>
+                      <th>Activo</th>
+                      <th>Motivo Deserción</th>
+                      <th>Apoderado</th>
+                      <th>Contacto</th>
+                      <th>Observaciones</th>
+                      <th>Fecha de Registro</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {students.map((student) => {
+                      const attendancePercentage = getAttendancePercentage(student);
+                      return (
+                        <tr key={student.id}>
+                          <td className="rut-cell sticky-col-1">{student.rut}</td>
+                          <td className="name-cell sticky-col-2">{student.nombre} {student.apellido}</td>
+                          <td>{student.curso}</td>
+                          <td>{student.equipo?.nombre || 'Sin equipo'}</td>
+                          <td>{getColegioNombre(student)}</td>
+                          <td>{getComunaNombre(student)}</td>
+                          <td className={`attendance-cell ${getAttendanceColor(attendancePercentage)}`}>
+                            {attendancePercentage.toFixed(1)}%
+                          </td>
+                          <td>
+                            <span style={{
+                              padding: '4px 8px',
+                              borderRadius: '4px',
+                              fontSize: '0.85rem',
+                              fontWeight: '600',
+                              backgroundColor: student.activo !== false ? '#dcfce7' : '#fee2e2',
+                              color: student.activo !== false ? '#166534' : '#991b1b'
+                            }}>
+                              {student.activo !== false ? 'Sí' : 'No'}
+                            </span>
+                          </td>
+                          <td>{student.motivo_desercion || 'N/A'}</td>
+                          <td>{student.nombre_apoderado || 'N/A'}</td>
+                          <td>{student.contacto_apoderado || 'N/A'}</td>
+                          <td className="observations-cell">{student.observaciones || 'N/A'}</td>
+                          <td>{new Date(student.created_at).toLocaleDateString('es-ES')}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
         )}
       </div>
 
