@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from app.routers import auth_router, equipos_router, tutores_router, estudiantes_router, usuarios_router, attendance, tutor_attendance, attendance_2026, tickets, prueba_diagnostico, prueba_unidad
+from app.routers.schools import router as schools_router
 from app.database import engine, ALLOWED_ORIGINS
 from app import models
 import os
@@ -40,6 +41,7 @@ app.include_router(usuarios_router)
 app.include_router(attendance.router)
 app.include_router(tutor_attendance.router)
 app.include_router(attendance_2026.router)
+app.include_router(schools_router)
 app.include_router(tickets.router, prefix="/tickets", tags=["tickets"])
 app.include_router(prueba_diagnostico.router, prefix="/prueba-diagnostico", tags=["prueba-diagnostico"])
 app.include_router(prueba_unidad.router, prefix="/prueba-unidad", tags=["prueba-unidad"])
@@ -60,6 +62,7 @@ if os.path.exists(frontend_dist_path):
             full_path.startswith("tutores/") or 
             full_path.startswith("estudiantes/") or 
             full_path.startswith("usuarios/") or 
+            full_path.startswith("schools/") or 
             full_path.startswith("attendance/") or 
             full_path.startswith("tutor-attendance/") or 
             full_path == "health"):
