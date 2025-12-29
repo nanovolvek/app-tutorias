@@ -19,13 +19,17 @@
 
 body {
   margin: 0;
-  min-height: 100vh;
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
   background-color: #f8fafc;
   color: #1e293b;
 }
 
 #root {
-  min-height: 100vh;
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
 }
 
 /* Estilos para enlaces */
@@ -382,9 +386,23 @@ ul, ol {
 .table-container {
   background: white;
   border-radius: 8px;
-  overflow: hidden;
+  overflow: auto;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
   margin-bottom: 24px;
+  max-height: calc(100vh - 300px);
+  position: relative;
+}
+
+/* Estilos para tablas de tickets y otras tablas con scroll */
+.tickets-table-container,
+.attendance-table-container {
+  background: white;
+  border-radius: 8px;
+  overflow: auto;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  margin-bottom: 24px;
+  max-height: calc(100vh - 300px);
+  position: relative;
 }
 
 .data-table {
