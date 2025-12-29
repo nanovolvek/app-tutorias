@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import AttendanceChart from '../components/AttendanceChart';
 import CreateSchoolTeamForm from '../components/CreateSchoolTeamForm';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 interface Estudiante {
   id: number;
@@ -84,6 +85,7 @@ const Dashboard: React.FC = () => {
   const [showCreateSchoolTeamForm, setShowCreateSchoolTeamForm] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const isMobile = useIsMobile();
   const { fetchWithAuth, user } = useAuth();
 
   const fetchEquipos = React.useCallback(async () => {
@@ -361,14 +363,48 @@ const Dashboard: React.FC = () => {
             <>
               {/* Gráfico de Asistencia de Estudiantes */}
               <div className="attendance-chart-section">
-                <h2 className="section-title">Gráfico de Asistencia por Estudiante</h2>
-                <div className="chart-container">
-                  <AttendanceChart 
-                    data={filteredAttendanceStats.students_stats}
-                    title="Porcentaje de Asistencia por Estudiante"
-                    xAxisLabel="Estudiantes"
-                  />
-                </div>
+                <h2 className="section-title">Asistencia por Estudiante</h2>
+                {isMobile ? (
+                  <div className="mobile-attendance-list">
+                    {filteredAttendanceStats.students_stats.map((student) => {
+                      const getColor = (percentage: number) => {
+                        if (percentage >= 80) return '#10b981';
+                        if (percentage >= 60) return '#f59e0b';
+                        return '#ef4444';
+                      };
+                      return (
+                        <div key={student.student_id} className="mobile-attendance-item">
+                          <div className="mobile-attendance-header">
+                            <div className="mobile-attendance-name">{student.student_name}</div>
+                            {student.course && (
+                              <div className="mobile-attendance-course">{student.course}</div>
+                            )}
+                          </div>
+                          <div className="mobile-attendance-stats">
+                            <div 
+                              className="mobile-attendance-percentage"
+                              style={{ color: getColor(student.attendance_percentage) }}
+                            >
+                              {student.attendance_percentage.toFixed(1)}%
+                            </div>
+                            <div className="mobile-attendance-details">
+                              <span>Asistidas: {student.attended_weeks}/{student.total_weeks}</span>
+                              <span>Inasistencias: {student.absent_weeks}</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="chart-container">
+                    <AttendanceChart 
+                      data={filteredAttendanceStats.students_stats}
+                      title="Porcentaje de Asistencia por Estudiante"
+                      xAxisLabel="Estudiantes"
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Lista de Estudiantes con muchas inasistencias */}
@@ -427,21 +463,52 @@ const Dashboard: React.FC = () => {
             <>
               {/* Gráfico de Asistencia de Tutores */}
               <div className="attendance-chart-section">
-                <h2 className="section-title">Gráfico de Asistencia por Tutor</h2>
-                <div className="chart-container">
-                  <AttendanceChart 
-                    data={filteredTutorAttendanceStats.tutors_stats.map(tutor => ({
-                      student_id: tutor.tutor_id,
-                      student_name: tutor.tutor_name,
-                      attendance_percentage: tutor.attendance_percentage,
-                      attended_weeks: tutor.attended_weeks,
-                      absent_weeks: tutor.absent_weeks,
-                      total_weeks: tutor.total_weeks
-                    }))}
-                    title="Porcentaje de Asistencia por Tutor"
-                    xAxisLabel="Tutores"
-                  />
-                </div>
+                <h2 className="section-title">Asistencia por Tutor</h2>
+                {isMobile ? (
+                  <div className="mobile-attendance-list">
+                    {filteredTutorAttendanceStats.tutors_stats.map((tutor) => {
+                      const getColor = (percentage: number) => {
+                        if (percentage >= 80) return '#10b981';
+                        if (percentage >= 60) return '#f59e0b';
+                        return '#ef4444';
+                      };
+                      return (
+                        <div key={tutor.tutor_id} className="mobile-attendance-item">
+                          <div className="mobile-attendance-header">
+                            <div className="mobile-attendance-name">{tutor.tutor_name}</div>
+                          </div>
+                          <div className="mobile-attendance-stats">
+                            <div 
+                              className="mobile-attendance-percentage"
+                              style={{ color: getColor(tutor.attendance_percentage) }}
+                            >
+                              {tutor.attendance_percentage.toFixed(1)}%
+                            </div>
+                            <div className="mobile-attendance-details">
+                              <span>Asistidas: {tutor.attended_weeks}/{tutor.total_weeks}</span>
+                              <span>Inasistencias: {tutor.absent_weeks}</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="chart-container">
+                    <AttendanceChart 
+                      data={filteredTutorAttendanceStats.tutors_stats.map(tutor => ({
+                        student_id: tutor.tutor_id,
+                        student_name: tutor.tutor_name,
+                        attendance_percentage: tutor.attendance_percentage,
+                        attended_weeks: tutor.attended_weeks,
+                        absent_weeks: tutor.absent_weeks,
+                        total_weeks: tutor.total_weeks
+                      }))}
+                      title="Porcentaje de Asistencia por Tutor"
+                      xAxisLabel="Tutores"
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Lista de Tutores con muchas inasistencias */}

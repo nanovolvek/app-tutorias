@@ -490,6 +490,61 @@ ul, ol {
   display: none;
 }
 
+/* Lista móvil de asistencia */
+.mobile-attendance-list {
+  display: none;
+}
+
+.mobile-attendance-item {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.mobile-attendance-header {
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.mobile-attendance-name {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+.mobile-attendance-course {
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.mobile-attendance-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mobile-attendance-percentage {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.mobile-attendance-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.mobile-attendance-details span {
+  display: block;
+}
+
 .mobile-card {
   background: white;
   border-radius: 8px;
@@ -597,6 +652,15 @@ ul, ol {
 
   .mobile-cards-container {
     display: block;
+  }
+
+  /* Mostrar lista móvil de asistencia en lugar de gráfico */
+  .mobile-attendance-list {
+    display: block;
+  }
+
+  .chart-container {
+    display: none;
   }
 
   .tickets-table-container,
