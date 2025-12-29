@@ -39,12 +39,23 @@ def create_school(
     current_user: User = Depends(get_admin_user)
 ):
     """Crear un nuevo colegio (solo administradores)"""
-    # Mapear nombre del schema al modelo
-    db_school = School(nombre=school.nombre, comuna=school.comuna)
-    db.add(db_school)
-    db.commit()
-    db.refresh(db_school)
-    return db_school
+    try:
+        # Mapear nombre del schema al modelo
+        db_school = School(nombre=school.nombre, comuna=school.comuna)
+        db.add(db_school)
+        db.commit()
+        db.refresh(db_school)
+        return db_school
+    except Exception as e:
+        db.rollback()
+        print(f"Error al crear colegio: {str(e)}")
+        print(f"Tipo de error: {type(e).__name__}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al crear el colegio: {str(e)}"
+        )
 
 @router.put("/{school_id}", response_model=SchoolSchema)
 def update_school(

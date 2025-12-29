@@ -18,9 +18,10 @@ class School(BaseModel):
     id: int
     nombre: str
     comuna: str
-    created_at: datetime
+    created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     
     class Config:
         from_attributes = True
         populate_by_name = True
+        orm_mode = True
