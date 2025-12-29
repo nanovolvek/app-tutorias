@@ -49,45 +49,47 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </button>
         </div>
         
-        {/* Información del equipo para tutores */}
-        {user?.rol === 'tutor' && equipoInfo && (
-          <div className="equipo-info">
-            <div className="equipo-section">
-              <h4>Tutores:</h4>
-              <div className="tutores-list">
-                {equipoInfo.tutores.map((tutor, index) => (
-                  <span key={tutor.id} className="tutor-name">
-                    {tutor.nombre} {tutor.apellido}
-                    {index < equipoInfo.tutores.length - 1 && ', '}
-                  </span>
-                ))}
-              </div>
-            </div>
-            {equipoInfo.colegio && (
+        <div className="sidebar-content">
+          {/* Información del equipo para tutores */}
+          {user?.rol === 'tutor' && equipoInfo && (
+            <div className="equipo-info">
               <div className="equipo-section">
-                <h4>Colegio:</h4>
-                <span className="colegio-name">{equipoInfo.colegio.nombre}</span>
+                <h4>Tutores:</h4>
+                <div className="tutores-list">
+                  {equipoInfo.tutores.map((tutor, index) => (
+                    <span key={tutor.id} className="tutor-name">
+                      {tutor.nombre} {tutor.apellido}
+                      {index < equipoInfo.tutores.length - 1 && ', '}
+                    </span>
+                  ))}
+                </div>
               </div>
-            )}
-          </div>
-        )}
-        
-        <nav className="sidebar-nav">
-          <ul>
-            {menuItems.map((item) => (
-              <li key={item.path}>
-                <Link
-                  to={item.path}
-                  className={`nav-link ${location.pathname === item.path ? 'active' : ''}`}
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <span className="nav-icon">{item.icon}</span>
-                  <span className="nav-label">{item.label}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
+              {equipoInfo.colegio && (
+                <div className="equipo-section">
+                  <h4>Colegio:</h4>
+                  <span className="colegio-name">{equipoInfo.colegio.nombre}</span>
+                </div>
+              )}
+            </div>
+          )}
+          
+          <nav className="sidebar-nav">
+            <ul>
+              {menuItems.map((item) => (
+                <li key={item.path}>
+                  <Link
+                    to={item.path}
+                    className={`nav-link ${location.pathname === item.path ? 'active' : ''}`}
+                    onClick={() => setSidebarOpen(false)}
+                  >
+                    <span className="nav-icon">{item.icon}</span>
+                    <span className="nav-label">{item.label}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
       </aside>
 
       {/* Main Content */}
