@@ -8,6 +8,8 @@ from app.models.school import Colegio
 from app.schemas.estudiante import Estudiante as EstudianteSchema, EstudianteCreate, EstudianteDeleteRequest
 from app.models.attendance import AsistenciaEstudiante
 from app.models.tickets import TicketEstudiante
+from app.models.prueba_diagnostico import PruebaDiagnosticoEstudiante
+from app.models.prueba_unidad import PruebaUnidadEstudiante
 from app.auth.dependencies import get_current_active_user, get_admin_user, get_tutor_user
 from openpyxl import load_workbook
 import re
@@ -165,6 +167,10 @@ def delete_estudiante(
         db.query(AsistenciaEstudiante).filter(AsistenciaEstudiante.estudiante_id == estudiante_id).delete()
         # Eliminar registros de tickets
         db.query(TicketEstudiante).filter(TicketEstudiante.estudiante_id == estudiante_id).delete()
+        # Eliminar registros de prueba diagnóstico
+        db.query(PruebaDiagnosticoEstudiante).filter(PruebaDiagnosticoEstudiante.estudiante_id == estudiante_id).delete()
+        # Eliminar registros de prueba unidad
+        db.query(PruebaUnidadEstudiante).filter(PruebaUnidadEstudiante.estudiante_id == estudiante_id).delete()
         # Eliminar el estudiante
         db.delete(estudiante)
         db.commit()
