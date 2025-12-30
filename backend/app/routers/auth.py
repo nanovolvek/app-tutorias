@@ -145,7 +145,11 @@ def request_password_reset(
     # Por seguridad, no revelamos si el email existe o no
     if not user:
         logger.info(f"[PASSWORD-RESET] Email no encontrado: {reset_data.email}")
+        print(f"[PASSWORD-RESET] Email no encontrado: {reset_data.email}", file=sys.stderr)
         return {"message": "Si el email existe, se enviará un enlace de recuperación"}
+    
+    logger.info(f"[PASSWORD-RESET] Usuario encontrado: {user.email}, ID: {user.id}")
+    print(f"[PASSWORD-RESET] Usuario encontrado: {user.email}, ID: {user.id}", file=sys.stderr)
     
     # Generar token de recuperación
     reset_token = secrets.token_urlsafe(32)
