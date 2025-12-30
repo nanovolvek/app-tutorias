@@ -9,7 +9,7 @@ from app.schemas.user import (
 )
 from app.auth.security import verify_password, create_access_token, get_password_hash
 from app.auth.dependencies import get_current_active_user
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, timezone
 import secrets
 import uuid
 from app.utils.email import send_password_reset_email
@@ -154,7 +154,7 @@ def request_password_reset(
     # Generar token de recuperación
     reset_token = secrets.token_urlsafe(32)
     user.password_reset_token = reset_token
-    user.password_reset_expires = datetime.utcnow() + timedelta(hours=1)  # Token válido por 1 hora
+    user.password_reset_expires = datetime.now(timezone.utc) + timedelta(hours=1)  # Token válido por 1 hora
     db.commit()
     
     logger.info(f"[PASSWORD-RESET] Token generado para usuario: {user.email}")
@@ -208,7 +208,7 @@ def reset_password(
             detail="Token inválido"
         )
     
-    if user.password_reset_expires and user.password_reset_expires < datetime.utcnow():
+    if user.password_reset_expires and user.password_reset_expires < datetime.now(timezone.utc):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Token expirado"
