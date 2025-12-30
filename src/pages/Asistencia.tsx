@@ -59,21 +59,8 @@ const Asistencia: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [editingWeek, setEditingWeek] = useState<string | null>(null);
   const [editingPerson, setEditingPerson] = useState<number | null>(null);
-  const [expandedPersons, setExpandedPersons] = useState<Set<number>>(new Set());
   const [expandedWeeks, setExpandedWeeks] = useState<Set<string>>(new Set());
   const isMobile = useIsMobile();
-
-  const togglePerson = (personId: number) => {
-    setExpandedPersons(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(personId)) {
-        newSet.delete(personId);
-      } else {
-        newSet.add(personId);
-      }
-      return newSet;
-    });
-  };
 
   const toggleWeek = (weekKey: string) => {
     setExpandedWeeks(prev => {
