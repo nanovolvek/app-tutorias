@@ -63,11 +63,35 @@ def create_usuario(
     usuario_data["hashed_password"] = get_password_hash(usuario_data.pop("password"))
     usuario_data["password_changed"] = False  # El usuario debe cambiar su contraseña al primer login
     
-    db_usuario = Usuario(**usuario_data)
-    db.add(db_usuario)
-    db.commit()
-    db.refresh(db_usuario)
-    return db_usuario
+    try:
+        db_usuario = Usuario(**usuario_data)
+        db.add(db_usuario)
+        db.commit()
+        db.refresh(db_usuario)
+        return db_usuario
+    except Exception as e:
+        db.rollback()
+        # Si hay error de ID duplicado, obtener el siguiente ID disponible
+        if "llave duplicada" in str(e).lower() or "duplicate key" in str(e).lower():
+            # Obtener el máximo ID actual
+            max_id_result = db.query(Usuario.id).order_by(Usuario.id.desc()).first()
+            next_id = (max_id_result[0] + 1) if max_id_result else 1
+            
+            # Verificar que el ID no exista
+            while db.query(Usuario).filter(Usuario.id == next_id).first():
+                next_id += 1
+            
+            # Crear el usuario con ID explícito
+            db_usuario = Usuario(id=next_id, **usuario_data)
+            db.add(db_usuario)
+            db.commit()
+            db.refresh(db_usuario)
+            return db_usuario
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Error al crear el usuario: {str(e)}"
+            )
 
 @router.get("/me/info", response_model=UsuarioSchema)
 def get_my_info(
