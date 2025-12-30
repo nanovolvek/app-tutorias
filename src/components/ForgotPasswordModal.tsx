@@ -37,7 +37,7 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ onClose, onSu
         setSuccess(true);
         // El token solo se muestra en desarrollo si SMTP no está configurado
         // En producción con SMTP configurado, el token se envía por email
-        if (data.token && import.meta.env.DEV) {
+        if (data.token && (import.meta as any).env?.DEV) {
           console.log('Token de recuperación (solo desarrollo, SMTP no configurado):', data.token);
         }
       } else {
