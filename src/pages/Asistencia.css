@@ -237,6 +237,41 @@
   border-bottom: none;
 }
 
+.mobile-attendance-person {
+  padding: 12px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.mobile-attendance-person:last-child {
+  border-bottom: none;
+}
+
+.mobile-attendance-person-header {
+  margin-bottom: 8px;
+}
+
+.mobile-attendance-person-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mobile-attendance-person-name {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 0.95rem;
+}
+
+.mobile-attendance-person-school {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.mobile-attendance-person-status {
+  width: 100%;
+  margin-top: 8px;
+}
+
 .mobile-attendance-week-header {
   display: flex;
   justify-content: space-between;

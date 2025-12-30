@@ -60,6 +60,7 @@ const Asistencia: React.FC = () => {
   const [editingWeek, setEditingWeek] = useState<string | null>(null);
   const [editingPerson, setEditingPerson] = useState<number | null>(null);
   const [expandedPersons, setExpandedPersons] = useState<Set<number>>(new Set());
+  const [expandedWeeks, setExpandedWeeks] = useState<Set<string>>(new Set());
   const isMobile = useIsMobile();
 
   const togglePerson = (personId: number) => {
@@ -69,6 +70,18 @@ const Asistencia: React.FC = () => {
         newSet.delete(personId);
       } else {
         newSet.add(personId);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleWeek = (weekKey: string) => {
+    setExpandedWeeks(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(weekKey)) {
+        newSet.delete(weekKey);
+      } else {
+        newSet.add(weekKey);
       }
       return newSet;
     });
@@ -637,21 +650,22 @@ const Asistencia: React.FC = () => {
             <>
               {isMobile ? (
                 <div className="mobile-attendance-cards">
-                  {getFilteredPersons().map(person => {
-                    const personData = getPersonData(person.id);
-                    const isExpanded = expandedPersons.has(person.id);
+                  {getFilteredWeeks().map(week => {
+                    const isExpanded = expandedWeeks.has(week.semana_key);
+                    const personsInWeek = getFilteredPersons();
+                    
                     return (
-                      <div key={person.id} className="mobile-attendance-card">
+                      <div key={week.semana_key} className="mobile-attendance-card">
                         <div 
                           className="mobile-attendance-card-header"
-                          onClick={() => togglePerson(person.id)}
+                          onClick={() => toggleWeek(week.semana_key)}
                         >
                           <div className="mobile-attendance-card-title">
                             <div className="mobile-attendance-card-name">
-                              {person.nombre} {person.apellido}
+                              Semana {week.semana_numero}
                             </div>
                             <div className="mobile-attendance-card-school">
-                              {personData?.colegio_nombre || 'Sin colegio'}
+                              {week.dias}
                             </div>
                           </div>
                           <div className="mobile-attendance-card-arrow">
@@ -660,17 +674,24 @@ const Asistencia: React.FC = () => {
                         </div>
                         {isExpanded && (
                           <div className="mobile-attendance-card-content">
-                            {getFilteredWeeks().map(week => {
+                            {personsInWeek.map(person => {
+                              const personData = getPersonData(person.id);
                               const currentStatus = getAttendanceStatus(week.semana_key, person.id);
                               const isEditing = editingWeek === week.semana_key && editingPerson === person.id;
                               
                               return (
-                                <div key={week.semana_key} className="mobile-attendance-week">
-                                  <div className="mobile-attendance-week-header">
-                                    <span className="mobile-attendance-week-number">S{week.semana_numero}</span>
-                                    <span className="mobile-attendance-week-dates">{week.dias}</span>
+                                <div key={person.id} className="mobile-attendance-person">
+                                  <div className="mobile-attendance-person-header">
+                                    <div className="mobile-attendance-person-info">
+                                      <div className="mobile-attendance-person-name">
+                                        {person.nombre} {person.apellido}
+                                      </div>
+                                      <div className="mobile-attendance-person-school">
+                                        {personData?.colegio_nombre || 'Sin colegio'}
+                                      </div>
+                                    </div>
                                   </div>
-                                  <div className="mobile-attendance-week-status">
+                                  <div className="mobile-attendance-person-status">
                                     {isEditing ? (
                                       <div className="mobile-status-options">
                                         {attendanceStates.map(state => (
