@@ -75,8 +75,17 @@ def create_superadmin():
             return
         
         else:
-            # Crear nuevo usuario
+            # Obtener el siguiente ID disponible
+            max_id_result = session.query(Usuario.id).order_by(Usuario.id.desc()).first()
+            next_id = (max_id_result[0] + 1) if max_id_result else 1
+            
+            # Verificar que el ID no exista
+            while session.query(Usuario).filter(Usuario.id == next_id).first():
+                next_id += 1
+            
+            # Crear nuevo usuario con ID explícito
             new_user = Usuario(
+                id=next_id,
                 email=email,
                 nombre_completo=nombre_completo,
                 rol="admin",
@@ -90,6 +99,7 @@ def create_superadmin():
             session.commit()
             
             print(f"\n[OK] Usuario superadmin creado exitosamente!")
+            print(f"    ID: {next_id}")
             print(f"    Email: {email}")
             print(f"    Nombre: {nombre_completo}")
             print(f"    Rol: admin")

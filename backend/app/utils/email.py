@@ -110,10 +110,20 @@ Equipo Plataforma Tutorías
         print(error_msg, file=sys.stderr)
         return False
     except Exception as e:
-        error_msg = f"❌ Error enviando email: {type(e).__name__}: {e}"
-        logger.error(error_msg, exc_info=True)
-        print(error_msg, file=sys.stderr)
-        import traceback
-        traceback.print_exc(file=sys.stderr)
+        error_type = type(e).__name__
+        if "gaierror" in error_type.lower() or "Name or service not known" in str(e):
+            error_msg = f"❌ Error DNS: El servidor SMTP '{smtp_server}' no se puede resolver."
+            logger.error(error_msg)
+            print(error_msg, file=sys.stderr)
+            print(f"   SOLUCIONES:", file=sys.stderr)
+            print(f"   1. Verifica que SMTP_SERVER sea correcto", file=sys.stderr)
+            print(f"   2. Si usas ensenachile.cl, pregunta al administrador el servidor SMTP correcto", file=sys.stderr)
+            print(f"   3. Alternativa: Usa Gmail (smtp.gmail.com) u Outlook (smtp-mail.outlook.com)", file=sys.stderr)
+        else:
+            error_msg = f"❌ Error enviando email: {error_type}: {e}"
+            logger.error(error_msg, exc_info=True)
+            print(error_msg, file=sys.stderr)
+            import traceback
+            traceback.print_exc(file=sys.stderr)
         return False
 
