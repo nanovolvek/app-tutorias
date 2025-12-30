@@ -5,7 +5,12 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import os
+import sys
+import logging
 from typing import Optional
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 def send_password_reset_email(email: str, token: str) -> bool:
     """
@@ -27,7 +32,10 @@ def send_password_reset_email(email: str, token: str) -> bool:
     
     # Si no hay configuración SMTP, retornar False
     if not smtp_user or not smtp_password:
-        print("⚠️  SMTP no configurado. Variables SMTP_USER y SMTP_PASSWORD requeridas.")
+        error_msg = "⚠️  SMTP no configurado. Variables SMTP_USER y SMTP_PASSWORD requeridas."
+        logger.error(error_msg)
+        print(error_msg, file=sys.stderr)
+        print(f"[EMAIL] SMTP_USER={smtp_user}, SMTP_PASSWORD={'***' if smtp_password else 'None'}", file=sys.stderr)
         return False
     
     # URL del reset
@@ -61,20 +69,51 @@ Equipo Plataforma Tutorías
     
     # Enviar email
     try:
-        server = smtplib.SMTP(smtp_server, smtp_port)
+        log_msg = f"[EMAIL] Intentando conectar a {smtp_server}:{smtp_port}..."
+        logger.info(log_msg)
+        print(log_msg, file=sys.stderr)
+        
+        server = smtplib.SMTP(smtp_server, smtp_port, timeout=10)
+        log_msg = "[EMAIL] Conexión establecida, iniciando STARTTLS..."
+        logger.info(log_msg)
+        print(log_msg, file=sys.stderr)
+        
         server.starttls()
+        log_msg = f"[EMAIL] Autenticando con usuario: {smtp_user}..."
+        logger.info(log_msg)
+        print(log_msg, file=sys.stderr)
+        
         server.login(smtp_user, smtp_password)
+        log_msg = f"[EMAIL] Autenticación exitosa, enviando email a {email}..."
+        logger.info(log_msg)
+        print(log_msg, file=sys.stderr)
+        
         server.send_message(msg)
         server.quit()
-        print(f"✅ Email de recuperación enviado a {email}")
+        success_msg = f"✅ Email de recuperación enviado a {email}"
+        logger.info(success_msg)
+        print(success_msg, file=sys.stderr)
         return True
+    except smtplib.SMTPConnectError as e:
+        error_msg = f"❌ Error de conexión SMTP: No se pudo conectar a {smtp_server}:{smtp_port} - {e}"
+        logger.error(error_msg)
+        print(error_msg, file=sys.stderr)
+        return False
     except smtplib.SMTPAuthenticationError as e:
-        print(f"❌ Error de autenticación SMTP: {e}")
+        error_msg = f"❌ Error de autenticación SMTP: {e} - Verifica SMTP_USER y SMTP_PASSWORD"
+        logger.error(error_msg)
+        print(error_msg, file=sys.stderr)
         return False
     except smtplib.SMTPException as e:
-        print(f"❌ Error SMTP: {e}")
+        error_msg = f"❌ Error SMTP: {e}"
+        logger.error(error_msg)
+        print(error_msg, file=sys.stderr)
         return False
     except Exception as e:
-        print(f"❌ Error enviando email: {e}")
+        error_msg = f"❌ Error enviando email: {type(e).__name__}: {e}"
+        logger.error(error_msg, exc_info=True)
+        print(error_msg, file=sys.stderr)
+        import traceback
+        traceback.print_exc(file=sys.stderr)
         return False
 

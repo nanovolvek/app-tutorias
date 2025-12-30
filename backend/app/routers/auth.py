@@ -129,10 +129,22 @@ def request_password_reset(
     db: Session = Depends(get_db)
 ):
     """Solicitar recuperación de contraseña"""
+    import logging
+    import os
+    import sys
+    
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+    
+    # Log inicial
+    logger.info(f"[PASSWORD-RESET] Solicitud de recuperación para: {reset_data.email}")
+    print(f"[PASSWORD-RESET] Solicitud de recuperación para: {reset_data.email}", file=sys.stderr)
+    
     user = db.query(Usuario).filter(Usuario.email == reset_data.email).first()
     
     # Por seguridad, no revelamos si el email existe o no
     if not user:
+        logger.info(f"[PASSWORD-RESET] Email no encontrado: {reset_data.email}")
         return {"message": "Si el email existe, se enviará un enlace de recuperación"}
     
     # Generar token de recuperación
@@ -141,8 +153,29 @@ def request_password_reset(
     user.password_reset_expires = datetime.utcnow() + timedelta(hours=1)  # Token válido por 1 hora
     db.commit()
     
+    logger.info(f"[PASSWORD-RESET] Token generado para usuario: {user.email}")
+    print(f"[PASSWORD-RESET] Token generado para usuario: {user.email}", file=sys.stderr)
+    
+    # Verificar variables SMTP antes de enviar
+    smtp_user = os.getenv("SMTP_USER")
+    smtp_password = os.getenv("SMTP_PASSWORD")
+    smtp_server = os.getenv("SMTP_SERVER")
+    smtp_port = os.getenv("SMTP_PORT")
+    
+    logger.info(f"[PASSWORD-RESET] SMTP config: SERVER={smtp_server}, PORT={smtp_port}, USER={smtp_user}, PASSWORD={'***' if smtp_password else 'NO CONFIGURADO'}")
+    print(f"[PASSWORD-RESET] SMTP config: SERVER={smtp_server}, PORT={smtp_port}, USER={smtp_user}, PASSWORD={'***' if smtp_password else 'NO CONFIGURADO'}", file=sys.stderr)
+    
     # Enviar email con el token
+    logger.info(f"[PASSWORD-RESET] Intentando enviar email...")
+    print(f"[PASSWORD-RESET] Intentando enviar email...", file=sys.stderr)
     email_sent = send_password_reset_email(user.email, reset_token)
+    
+    if email_sent:
+        logger.info(f"[PASSWORD-RESET] ✅ Email enviado exitosamente a {user.email}")
+        print(f"[PASSWORD-RESET] ✅ Email enviado exitosamente a {user.email}", file=sys.stderr)
+    else:
+        logger.error(f"[PASSWORD-RESET] ❌ Error al enviar email a {user.email}")
+        print(f"[PASSWORD-RESET] ❌ Error al enviar email a {user.email}", file=sys.stderr)
     
     # Si el email no se pudo enviar (SMTP no configurado), retornar el token en desarrollo
     # En producción, esto no debería pasar si SMTP está configurado
@@ -151,9 +184,9 @@ def request_password_reset(
     }
     
     # Solo en desarrollo, si SMTP no está configurado, mostrar el token
-    import os
     if not email_sent and os.getenv("ENVIRONMENT", "production") == "development":
         response["token"] = reset_token  # Solo para desarrollo
+        logger.warning(f"[PASSWORD-RESET] Token devuelto en respuesta (solo desarrollo): {reset_token}")
     
     return response
 
