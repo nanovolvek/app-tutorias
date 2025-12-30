@@ -48,31 +48,44 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 @router.post("/login-json", response_model=Token)
 def login_json(user_data: UsuarioLogin, db: Session = Depends(get_db)):
     """Endpoint alternativo para login con JSON"""
-    user = db.query(Usuario).filter(Usuario.email == user_data.email).first()
-    
-    if not user or not verify_password(user_data.password, user.hashed_password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Email o contraseña incorrectos",
-            headers={"WWW-Authenticate": "Bearer"},
+    try:
+        user = db.query(Usuario).filter(Usuario.email == user_data.email).first()
+        
+        if not user or not verify_password(user_data.password, user.hashed_password):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Email o contraseña incorrectos",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        
+        if not user.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Usuario inactivo"
+            )
+        
+        access_token_expires = timedelta(minutes=30)
+        access_token = create_access_token(
+            data={"sub": user.email}, expires_delta=access_token_expires
         )
-    
-    if not user.is_active:
+        
+        # Manejar caso donde password_changed puede no existir (migración pendiente)
+        password_changed = getattr(user, 'password_changed', True)
+        
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "requires_password_change": not password_changed
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Usuario inactivo"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error interno del servidor: {str(e)}"
         )
-    
-    access_token_expires = timedelta(minutes=30)
-    access_token = create_access_token(
-        data={"sub": user.email}, expires_delta=access_token_expires
-    )
-    
-    return {
-        "access_token": access_token,
-        "token_type": "bearer",
-        "requires_password_change": not user.password_changed
-    }
 
 @router.get("/me", response_model=UsuarioSchema)
 def get_current_user_info(current_user: Usuario = Depends(get_current_active_user)):
